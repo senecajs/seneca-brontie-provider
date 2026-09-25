@@ -319,13 +319,13 @@ function parentEntityOf(key: string, names: string[]): string {
 
 
 function providerRepo(model: any, lower: string, tname: string):
-  { url: string, path: string } {
+  { url: string, path: string, host: string } {
   const host = model?.main?.[KIT]?.repo?.host || 'github.com'
   const declared = model?.main?.[KIT]?.target?.[tname]?.output?.repo
   const path = null != declared && '' !== declared ?
     String(declared) : `senecajs/seneca-${lower}-provider`
 
-  return { url: `https://${host}/${path}`, path }
+  return { url: `https://${host}/${path}`, path, host }
 }
 
 
@@ -544,6 +544,8 @@ const Main = cmp(function Main(props: any) {
     sdkInstallFlag: sdkDep.startsWith('github:') ? ' --allow-git=all' :
       (sdkDep.startsWith('http') ? ' --allow-remote=all' : ''),
     repoUrl: repo.url,
+    repoPath: repo.path,
+    repoHost: repo.host,
     sdkRepoUrl,
     sdkTag,
     sdkRepoDir,
@@ -721,7 +723,7 @@ const PackageJson = cmp(function PackageJson(props: any) {
         'npm run build && npm run test && npm run repo-tag && ' +
         'npm publish --access public --registry https://registry.npmjs.org',
     },
-    files: ['dist', 'doc', 'src/**/*.ts', 'LICENSE'],
+    files: ['dist', 'doc', 'src/**/*.ts', 'LICENSE', 'README.md'],
     engines: { node: '>=24' },
     dependencies: {
       // The SDK this plugin wraps. Published-and-pinned by default; a git
