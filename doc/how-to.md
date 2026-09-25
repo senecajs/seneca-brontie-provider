@@ -58,12 +58,13 @@ const voucher = await seneca
   .make$({ idempotencyKey: 'idempotencyKey0', product: 'product0' })
   .save$()
 
-console.log(voucher)
+console.log(voucher.id)
 ```
 
-`save$` resolves to the record as the API returned it. The API definition
-declares no id for a `voucher`, so the record is the only place to
-read what identifies one.
+`save$` resolves to the record as the API returned it, which is the only
+reliable source of the id. Read it from there rather than predicting it:
+what an API does with an id you supply on create is its own business, and
+several ignore it entirely.
 
 ## Run offline, without a server
 

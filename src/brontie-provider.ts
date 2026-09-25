@@ -103,8 +103,20 @@ function BrontieProvider(this: any, options: BrontieProviderOptions) {
   // required keys would strip the action's whole payload. The SDK still
   // validates: an action whose own point cannot be built is refused with
   // `point_action_invalid` rather than sent somewhere else.
-  function actionq(q: any, action: string) {
+  function actionq(q: any, name: string, action: string) {
     const out = cleanq(q)
+
+    // An action addresses the SAME record the canonical route does, so the id
+    // is translated the same way a write translates it: split into the path
+    // parameters the API names, under the names it names them by. Sending the
+    // joined id as one terminal parameter asks for `owner0/repo0` as a repo.
+    const own = Object.prototype.hasOwnProperty
+    const spec = own.call(ID_SPEC, name) ? ID_SPEC[name] : null
+
+    if (null != spec && null != out.id) {
+      Object.assign(out, splitid(name, out.id, 'action'))
+      delete out.id
+    }
 
     out.$action = action
     return out
@@ -126,6 +138,110 @@ function BrontieProvider(this: any, options: BrontieProviderOptions) {
       throw e
     }
   }
+
+  // HOW EACH ENTITY'S id MAPS TO THE API'S OWN KEYS, from the model.
+  //
+  // `parts`  the path parameters that address one record, in path order.
+  //          One part is the ordinary case: the API just calls its key
+  //          something other than `id`. Two or more is a compound key,
+  //          where no single parameter names the record.
+  // `sep`    joins the parts into the one id a Seneca entity carries. A
+  //          slash cannot occur inside a path segment, so the join is
+  //          unambiguous and the split cannot over-split.
+  // `from`   where each part's value lives in a RESPONSE, as a dotted
+  //          path. A path parameter's name is not generally a response
+  //          field's name: github returns a repo's owner as an OBJECT
+  //          (`owner.login`) and its name as `name`, never `repo`.
+  //          A part missing here cannot be read back off a response.
+  // `park`   false where `brontie_id` is a name this entity
+  //          already uses, so the API's own id is left where it is.
+  const ID_SPEC: Record<string, { parts: string[], sep: string, from?: Record<string, string>, park?: boolean }> = {
+    voucher: { parts: ['voucherToken'], sep: '/' },
+  }
+
+
+  // Read a dotted path out of a record. `from` maps a path parameter to
+  // wherever the response actually carries it, and that is sometimes inside
+  // a nested object.
+  function idread(data: any, path: string) {
+    let node: any = data
+    for (const key of path.split('.')) {
+      if (null == node) {
+        return undefined
+      }
+      node = node[key]
+    }
+    return node
+  }
+
+
+  // The Seneca id, split back into the parameters the API addresses a record
+  // with. Refuses a wrong part count rather than sending a URL built from
+  // whatever the id happened to contain — that would address a different
+  // record, or none, and the 404 would name nothing useful.
+  function splitid(name: string, id: any, what: string) {
+    const spec = ID_SPEC[name]
+    const text = null == id ? '' : String(id)
+    const got = 1 === spec.parts.length ? [text] : text.split(spec.sep)
+
+    if (spec.parts.length !== got.length || got.some((p: string) => '' === p)) {
+      throw new Error(
+        '@seneca/brontie-provider: ' + name + ' ' + what +
+        ": id must be '" + spec.parts.join(spec.sep) + "', got: " + JSON.stringify(id))
+    }
+
+    const out: Record<string, any> = {}
+    spec.parts.forEach((p: string, i: number) => { out[p] = got[i] })
+    return out
+  }
+
+
+  // The id for a record the API returned.
+  //
+  // `vals` are the parameters THIS request addressed it with, and they win:
+  // a response does not always repeat them. Otherwise the parts are read out
+  // of the response through `from`, which is what makes a created or listed
+  // record identifiable at all.
+  //
+  // THE ADDRESSING KEY WINS over an `id` the response already carries. A
+  // response often has both — github's pull has a global database `id` and
+  // a repo-scoped `number` — and the unrelated one is no use for addressing
+  // anything. It is kept as `brontie_id`, unless `park` forbids.
+  function joinid(name: string, data: any, vals?: any) {
+    const spec = ID_SPEC[name]
+    if (null == data) {
+      return data
+    }
+
+    let id = null
+
+    if (null != vals) {
+      const got = spec.parts.map((p: string) => vals[p])
+      if (got.every((v: any) => null != v && '' !== String(v))) {
+        id = got.join(spec.sep)
+      }
+    }
+
+    if (null == id) {
+      const got = spec.parts.map((p: string) =>
+        idread(data, (spec.from || {})[p] || p))
+      if (got.every((v: any) =>
+        null != v && 'object' !== typeof v && '' !== String(v))) {
+        id = got.join(spec.sep)
+      }
+    }
+
+    if (null != id) {
+      if (false !== spec.park && null != data.id && String(data.id) !== id &&
+        null == data.brontie_id) {
+        data.brontie_id = data.id
+      }
+      data.id = id
+    }
+
+    return data
+  }
+
 
   // The custom actions each cmd can reach, as action -> SDK op. An action
   // is an alternative POINT of an ordinary op (`select.$action` in the API
@@ -225,7 +341,7 @@ function BrontieProvider(this: any, options: BrontieProviderOptions) {
       const action$ = actionOf(msg)
       if (null != action$) {
         const op$ = actionop(action$, 'balance', 'load')
-        const hit = await ornull(() => this.shared.sdk.Balance()[op$](actionq(msg.q, action$)))
+        const hit = await ornull(() => this.shared.sdk.Balance()[op$](actionq(msg.q, 'balance', action$)))
         return null == hit ? null : entize(plain(hit))
       }
 
@@ -241,6 +357,16 @@ function BrontieProvider(this: any, options: BrontieProviderOptions) {
   entity.voucher.cmd.save.action =
     async function save_voucher(this: any, entize: any, msg: any) {
       const data = msg.ent.data$(false)
+
+      // The API assigns a voucher's `voucherToken`, and a create names no record, so
+      // Seneca's `id` is not sent: the id is read back from the response.
+      const key: any = null
+
+      // `brontie_id` is this provider's own bookkeeping — the
+      // API's unrelated `id`, parked by joinid(). It is not a field of the
+      // API's write schema, so it must not travel in the request body.
+      delete data.brontie_id
+      delete data.id
       const sdk = this.shared.sdk
 
       const action$ = actionOf(msg)
@@ -250,13 +376,13 @@ function BrontieProvider(this: any, options: BrontieProviderOptions) {
         // has already dropped every trailing-`$` key, `action$` included,
         // so `$action` is the only thing added here.
         data.$action = action$
-        const done = await sdk.Voucher()[op$](data)
-        return entize(plain(done))
+        const done = await sdk.Voucher(null == key ? undefined : { match: key })[op$](data)
+        return entize(joinid('voucher', plain(done), key))
       }
 
-      const res = await sdk.Voucher().create(data)
+      const res = await sdk.Voucher(null == key ? undefined : { match: key }).create(data)
 
-      return entize(plain(res))
+      return entize(joinid('voucher', plain(res), key))
     }
 
 

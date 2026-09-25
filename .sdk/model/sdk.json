@@ -270,7 +270,20 @@
               "r": false,
               "sh": "Who the gift appears to be from, per call, so it can vary by course or cohort.",
               "t": "`$STRING`"
+            },
+            "voucherToken": {
+              "a": true,
+              "h": "Voucher Token",
+              "n": "voucherToken",
+              "r": false,
+              "ro": true,
+              "sh": "Opaque voucher identifier.",
+              "t": "`$STRING`"
             }
+          },
+          "id": {
+            "field": "voucherToken",
+            "name": "voucherToken"
           },
           "name": "voucher",
           "op": {

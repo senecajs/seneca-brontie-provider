@@ -40,3 +40,17 @@ main: kit: target: 'seneca-provider': sdk: {
   version: '0.0.1'
   dep: { kind: 'git', ref: 'ts-v0.0.1' }
 }
+
+# The SDK's own declaration, from brontie-sdk's .sdk/model/project.aontu:
+# generation checks that this builder's model matches the SDK's.
+main: kit: entity: voucher: {
+  id: { field: 'voucherToken', name: 'voucherToken' }
+  fields: voucherToken: {
+    n: 'voucherToken'
+    h: 'Voucher Token'
+    r: false
+    ro: true
+    t: '`$STRING`'
+    sh: 'Opaque voucher identifier.'
+  }
+}

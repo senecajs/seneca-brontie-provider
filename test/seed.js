@@ -10,8 +10,8 @@ const SEED = {
       balance1: {"alertAt":200,"alertPercent":200,"balance":200,"currency":"currency1","id":"balance1"},
     },
     voucher: {
-      voucher0: {"idempotencyKey":"idempotencyKey0","product":"product0","id":"voucher0"},
-      voucher1: {"idempotencyKey":"idempotencyKey1","product":"product1","id":"voucher1"},
+      voucher0: {"idempotencyKey":"idempotencyKey0","product":"product0","voucherToken":"voucher0"},
+      voucher1: {"idempotencyKey":"idempotencyKey1","product":"product1","voucherToken":"voucher1"},
     },
   },
 }

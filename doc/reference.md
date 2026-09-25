@@ -91,7 +91,7 @@ Any option the `BrontieSDK` constructor accepts:
   testopts: {
     entity: {
       balance: { balance0: {"alertAt":100,"alertPercent":100,"balance":100,"currency":"currency0","id":"balance0"} },
-      voucher: { voucher0: {"idempotencyKey":"idempotencyKey0","product":"product0","id":"voucher0"} },
+      voucher: { voucher0: {"idempotencyKey":"idempotencyKey0","product":"product0","voucherToken":"voucher0"} },
     },
   },
 })
@@ -112,7 +112,7 @@ whole of what each one answers.
 | Seneca canon | SDK accessor | Route | API key | Parent keys | Commands |
 | ------------ | ------------ | ----- | ------- | ----------- | -------- |
 | `provider/brontie/balance` | `sdk.Balance()` | `/api/v1/balance` | `id` | — | `load$` |
-| `provider/brontie/voucher` | `sdk.Voucher()` | `/api/v1/vouchers` | `id` | — | `save$` |
+| `provider/brontie/voucher` | `sdk.Voucher()` | `/api/v1/vouchers` | `voucherToken` | — | `save$` |
 
 ### `provider/brontie/balance`
 
@@ -147,6 +147,11 @@ provider hands Seneca the plain record from `.data()`.
 | Command | Query / data | Returns |
 | ------- | ------------ | ------- |
 | `save$()` | entity data | Created `voucher`; the API declares no update operation. |
+
+The API identifies `voucher` records by `voucherToken`; the provider
+carries that value as the entity's `id`, so every query and entity above
+uses `id`. A record the API returns with an unrelated `id` of its own
+keeps that under `brontie_id`.
 
 Required fields, as declared by the API definition. Optional fields the API
 also defines are passed through unchanged in both directions.
