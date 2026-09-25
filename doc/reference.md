@@ -27,7 +27,7 @@ the [README](../README.md), and the document index is [here](README.md).
 | ---- | ----- |
 | Node.js | `>=24` |
 | Module format | CommonJS |
-| SDK | [`@voxgig-sdk/brontie-sdk`](https://www.npmjs.com/package/@voxgig-sdk/brontie-sdk) `^0.0.2` |
+| SDK | [`@voxgig-sdk/brontie-sdk`](https://www.npmjs.com/package/@voxgig-sdk/brontie-sdk) `^0.0.3` |
 
 The SDK is an ordinary published dependency, installed by `npm install`
 like any other.
@@ -221,7 +221,7 @@ await seneca.post('sys:provider,provider:brontie,get:info')
   version: '0.0.2',
   sdk: {
     name: '@voxgig-sdk/brontie-sdk',
-    version: '0.0.2',
+    version: '0.0.3',
   },
 }
 ```

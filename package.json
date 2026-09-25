@@ -46,7 +46,7 @@
     "node": ">=24"
   },
   "dependencies": {
-    "@voxgig-sdk/brontie-sdk": "^0.0.2"
+    "@voxgig-sdk/brontie-sdk": "^0.0.3"
   },
   "peerDependencies": {
     "@seneca/env": ">=0.4",

@@ -35,7 +35,7 @@ main: kit: target: 'seneca-provider': output: root: true
 # The SDK this provider wraps, released to npm from voxgig-sdk/brontie-sdk.
 main: kit: target: 'seneca-provider': sdk: {
   package: '@voxgig-sdk/brontie-sdk'
-  version: '0.0.2'
+  version: '0.0.3'
 }
 
 # The npm release. 0.0.1 was published by hand, as a new package's first

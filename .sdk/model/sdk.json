@@ -689,7 +689,7 @@
               "spec": ""
             },
             "package": "@voxgig-sdk/brontie-sdk",
-            "version": "0.0.2"
+            "version": "0.0.3"
           },
           "srcfeature": false,
           "superseded": [],
