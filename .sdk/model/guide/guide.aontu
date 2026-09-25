@@ -1,0 +1,43 @@
+# Guide
+
+@"@voxgig/apidef/model/guide.aontu"
+
+@"./base-guide.aontu"
+
+
+# Live coverage.
+#
+# READ THIS BEFORE ADDING A LIVE HINT. The generated live.test.ts plans EVERY
+# operation point, not just the hinted ones: the hint only decides whether the
+# file is generated at all (`if (!plan.some(p => p.facts.live)) return`).
+# Hinting one operation therefore switches the WHOLE live suite on, and every
+# other operation is then attempted with synthesized input. Anything that must
+# not run live needs `excluded` set explicitly — silence is not exclusion.
+#
+# Proven on 2026-09-24: hinting balance alone sent a real
+# POST /api/v1/vouchers at production. It returned 400 (rejected on a missing
+# idempotencyKey, so nothing was issued), but only by luck.
+
+# Read-only. Safe to run on every live pass.
+# currency is `const: EUR` in the spec, so equal is deterministic and does not
+# depend on account state. balance/alertPercent are numbers and alertAt is
+# nullable, so none of them suit `nonempty`, which tests `.length > 0`.
+guide: entity: balance: path: "/api/v1/balance": op: load: live: {
+  id: "balance"
+  auth: "account"
+  input: {}
+  assert: equal: currency: "EUR"
+  retention: "Read-only; creates nothing."
+}
+
+# EXCLUDED, deliberately. Issuing a voucher writes a permanent record into
+# Brontie's real system: the API publishes no delete endpoint and no refund
+# path ("There is no refund path back to the balance, including for vouchers
+# that are never redeemed"). A test key skips the DEBIT but still ISSUES the
+# voucher, so sandbox is not a safe place to run this repeatedly either.
+# Removing this line makes every live run mint real vouchers.
+guide: entity: voucher: path: "/api/v1/vouchers": op: create: live: {
+  id: "voucher-create"
+  auth: "account"
+  excluded: "Issues a permanent voucher; no delete or refund path exists"
+}

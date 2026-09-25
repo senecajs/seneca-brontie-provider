@@ -1,0 +1,56 @@
+# Project overlay — YOURS. The scaffold creates this file once and never
+# overwrites it.
+#
+# Most of model/ is toolchain-derived and is deliberately regenerated so that
+# toolchain fixes propagate; this file, the guide, and the target, feature and
+# edition indexes are kept. Put anything here that is a decision about THIS
+# project rather than a fact about the API.
+#
+# Included LAST by sdk.aontu, after target/target-index.aontu, because a key
+# under main.kit.target.<t> can only refine a target that has already been
+# defined. Declared earlier, the model build fails with "Cannot unify value:
+# nil with value: string / key ext value was: nil", which names nothing that
+# would lead you here.
+#
+# The release version each generated manifest declares (package.json,
+# pyproject.toml, the gemspec, the rockspec) and that the port Makefiles tag:
+#
+#   main: kit: target: ts: publish: version: '1.2.3'
+#
+# Per target, because ports publish to different registries on different
+# clocks. Set every target to the same value for a lockstep repo.
+#
+# A published package name that does not follow the derivation:
+#
+#   main: kit: target: ts: publish: registry: package: '@scope/name'
+
+# THIS REPOSITORY IS THE PROVIDER, NOT AN SDK. The builder generates the
+# Seneca provider at the repository root and nothing else: no SDK repository
+# files, no entity test data, no documentation site.
+main: kit: phase: top: active: false
+main: kit: phase: build: active: false
+main: kit: doc: active: false
+main: kit: target: 'seneca-provider': output: root: true
+
+# The SDK this provider wraps, released from voxgig-sdk/brontie-sdk. Until it
+# is on npm, it is installed from a tag whose tree is the SDK's ts/ folder;
+# drop `dep` once it is published.
+main: kit: target: 'seneca-provider': sdk: {
+  package: '@voxgig-sdk/brontie-sdk'
+  version: '0.0.1'
+  dep: { kind: 'git', ref: 'ts-v0.0.1' }
+}
+
+# The SDK's own declaration, from brontie-sdk's .sdk/model/project.aontu:
+# generation checks that this builder's model matches the SDK's.
+main: kit: entity: voucher: {
+  id: { field: 'voucherToken', name: 'voucherToken' }
+  fields: voucherToken: {
+    n: 'voucherToken'
+    h: 'Voucher Token'
+    r: false
+    ro: true
+    t: '`$STRING`'
+    sh: 'Opaque voucher identifier.'
+  }
+}

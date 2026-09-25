@@ -1,0 +1,28 @@
+# BasicBalanceFlow
+
+main: kit: flow: BasicBalanceFlow:
+{
+  entity: "balance",
+  kind: "basic",
+  name: "BasicBalanceFlow",
+  step: [
+    {
+      i: {
+        ref: "balance_ref01",
+        srcdatavar: "balance_ref01_data",
+        suffix: "_dt0"
+      }
+
+      o: "load",
+      v: [
+        {
+          apply: "TextFieldMark",
+          def: {
+            mark: "Mark01-balance_ref01"
+          }
+        }
+      ]
+    }
+  ],
+  "key$": "BasicBalanceFlow"
+}
