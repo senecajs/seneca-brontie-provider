@@ -230,6 +230,10 @@ function BrontieProvider(this: any, options: BrontieProviderOptions) {
       }
 
       const res = await ornull(() => this.shared.sdk.Balance().load({}))
+      // The route names no record, so an id finds only the record carrying it.
+      if (null != res && null != q.id && String(plain(res).id) !== String(q.id)) {
+        return null
+      }
       return null == res ? null : entize(plain(res))
     }
 
@@ -279,9 +283,10 @@ function BrontieProvider(this: any, options: BrontieProviderOptions) {
     // the SDK was constructed with NO credential at all — the request went
     // out unauthenticated and failed much later as a 401 or a 404 on
     // anything private, with nothing at startup to point at the cause.
-    // `apikey` wins when both are set, so a config that has migrated is
-    // unaffected.
-    const apikey = res?.keymap?.apikey?.value ?? res?.keymap?.api?.value
+    // `apikey` wins when both are set and it is not empty, so a config that
+    // has migrated is unaffected.
+    const apikey = [res?.keymap?.apikey?.value, res?.keymap?.api?.value]
+      .find((value: any) => null != value && '' !== value)
 
     // Hand the credential to the SDK as `apikey`, NOT as an authorization
     // HEADER. The SDK's own auth stage owns that header: it reads

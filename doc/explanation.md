@@ -204,11 +204,10 @@ cleaner and the not-found translation — plus the construction of the client, s
 an SDK change is absorbed in one place and surfaces as a failing offline test
 rather than as a surprise in production.
 
-The API definition declares no server, so this plugin has no default host: the
-base URL arrives through the `sdk.base` option, supplied by whoever configures
-the plugin for a particular deployment. The tests therefore run entirely
-against the SDK's mock transport, which is the one host that is always
-available.
+The SDK's default host is `https://www.brontie.ie`, the server the API
+definition declares, and the `sdk.base` option points the plugin at another.
+Nothing declares a test server, so the tests run entirely against the SDK's
+mock transport, which is the one host that is always available.
 
 
 ## A generated plugin

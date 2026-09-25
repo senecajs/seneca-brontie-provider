@@ -10,7 +10,6 @@ are listed in the [reference](reference.md).
 
 - [Read one record by id](#read-one-record-by-id)
 - [Create a record](#create-a-record)
-- [Update a record](#update-a-record)
 - [Run offline, without a server](#run-offline-without-a-server)
 - [Point at a different server](#point-at-a-different-server)
 - [Send an API key](#send-an-api-key)
@@ -49,8 +48,9 @@ genuinely wrong.
 
 ## Create a record
 
-`make$` builds an entity and `save$` writes it. An entity with no id
-is a create:
+`make$` builds an entity and `save$` writes it. The API has no update
+for a `voucher`, so `save$` always creates one, even from an entity
+that carries an id:
 
 ```js
 const voucher = await seneca
@@ -58,33 +58,12 @@ const voucher = await seneca
   .make$({ idempotencyKey: 'idempotencyKey0', product: 'product0' })
   .save$()
 
-console.log(voucher.id)
+console.log(voucher)
 ```
 
-`save$` resolves to the record as the API returned it, which is the only
-reliable source of the id. Read it from there rather than predicting it:
-what an API does with an id you supply on create is its own business, and
-several ignore it entirely.
-
-## Update a record
-
-The same call updates. `save$` dispatches on the id: an entity carrying
-one is an update, an entity without one is a create. So the safe shape is
-load, change, save:
-
-```js
-const voucher = seneca
-  .entity('provider/brontie/voucher')
-  .make$({ id: 'voucher0' })
-
-voucher.idempotencyKey = 'idempotencyKey-changed'
-
-await voucher.save$()
-```
-
-Mutating the record you loaded sends it as it stood plus your change, so
-you do not depend on how the API treats a request that omits fields —
-some merge, some replace.
+`save$` resolves to the record as the API returned it. The API definition
+declares no id for a `voucher`, so the record is the only place to
+read what identifies one.
 
 ## Run offline, without a server
 
@@ -97,8 +76,8 @@ seed it with `testopts`:
   testopts: {
     entity: {
       balance: {
-        balance0: { alertAt: 'alertAt0', alertPercent: 100, balance: 100, currency: 'currency0', id: 'balance0' },
-        balance1: { alertAt: 'alertAt1', alertPercent: 200, balance: 200, currency: 'currency1', id: 'balance1' },
+        balance0: { alertAt: 100, alertPercent: 100, balance: 100, currency: 'currency0', id: 'balance0' },
+        balance1: { alertAt: 200, alertPercent: 200, balance: 200, currency: 'currency1', id: 'balance1' },
       },
     },
   },
@@ -126,9 +105,8 @@ constructor, so `base` chooses the host:
 })
 ```
 
-The API definition declares no server, so there is no default worth
-relying on: set `base` explicitly, or run against the mock instead (see
-[Run offline, without a server](#run-offline-without-a-server)).
+The SDK's own default is `https://www.brontie.ie`, the server the API definition
+declares, so `base` is needed only to reach another one.
 
 ## Send an API key
 
@@ -326,10 +304,10 @@ $ npm run repo-publish
 Only `dist`, the TypeScript sources and the licence file are published;
 the test suite and its build output stay in the repository.
 
-Before publishing, check that `package.json` still depends on the
-published SDK by version range and not on a local path: a `file:`
-dependency left behind from local development installs perfectly on your
-own machine and cannot be resolved by anybody else.
+Publish the SDK to npm first. `package.json` depends on it as
+`github:voxgig-sdk/brontie-sdk#ts-v0.0.1`, which everyone installing this package would
+have to fetch with git. Then drop `sdk.dep` from the model, regenerate,
+and check that the dependency is a version range.
 
 One last thing: this repository is GENERATED from the Brontie Partner API
 model by [@voxgig/sdkgen](https://github.com/voxgig/sdkgen). An edit made

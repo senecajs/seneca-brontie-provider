@@ -61,7 +61,7 @@ const seneca = Seneca()
 await seneca.ready()
 
 const balance = await seneca
-  .entity('provider/brontie/balance').load$('some-id')
+  .entity('provider/brontie/balance').load$()
 ```
 
 
@@ -110,7 +110,7 @@ whose logs cannot be read.
 | --- | --- |
 | `sys:provider,provider:brontie,get:info` | Plugin and SDK version information. |
 | `sys:entity,cmd:load,zone:provider,base:brontie,name:balance` | Load one record. |
-| `sys:entity,cmd:save,zone:provider,base:brontie,name:voucher` | Create or update a record. |
+| `sys:entity,cmd:save,zone:provider,base:brontie,name:voucher` | Create a record. |
 
 
 

@@ -55,12 +55,11 @@ Seneca({ legacy: false })
   .use('promisify')
   .use('entity')
   .use('provider', { ... })
-  .use('@seneca/brontie-provider', { sdk: { base: BASE } })
+  .use('@seneca/brontie-provider')
 ```
 
-The Brontie Partner definition declares no server, so there is no default
-base URL: `BASE` is the URL of the API you are talking to, and it must be
-supplied through the `sdk` option.
+The SDK's default base URL is `https://www.brontie.ie`, the server the
+Brontie Partner definition declares. Pass `sdk: { base }` to reach another.
 
 The SDK client is constructed during plugin startup and is not available
 until `seneca.ready()` resolves.
@@ -79,7 +78,7 @@ Any option the `BrontieSDK` constructor accepts:
 
 | Key | Effect |
 | --- | ------ |
-| `base` | Base URL for API requests. There is no default: this API declares no server, so it must be set. |
+| `base` | Base URL for API requests. The SDK's own default is `https://www.brontie.ie`, the server the API definition declares. |
 | `prefix` / `suffix` | URL fragments placed around the path. |
 | `headers` | Headers sent on every request. These win over the `authorization` header the provider adds from a configured key. |
 | `system` | System overrides, e.g. a custom `fetch`. |
@@ -91,7 +90,7 @@ Any option the `BrontieSDK` constructor accepts:
   test: true,
   testopts: {
     entity: {
-      balance: { balance0: {"alertAt":"alertAt0","alertPercent":100,"balance":100,"currency":"currency0","id":"balance0"} },
+      balance: { balance0: {"alertAt":100,"alertPercent":100,"balance":100,"currency":"currency0","id":"balance0"} },
       voucher: { voucher0: {"idempotencyKey":"idempotencyKey0","product":"product0","id":"voucher0"} },
     },
   },
@@ -122,14 +121,14 @@ provider hands Seneca the plain record from `.data()`.
 
 | Command | Query / data | Returns |
 | ------- | ------------ | ------- |
-| `load$(q)` | `id` **required** | One `balance`, or `null` if not found. |
+| `load$(q)` | nothing: the route names no record | The one `balance`, or `null` when `id` names one it does not carry. |
 
 Required fields, as declared by the API definition. Optional fields the API
 also defines are passed through unchanged in both directions.
 
 | Field | Type | Notes |
 | ----- | ---- | ----- |
-| `alertAt` | string |  |
+| `alertAt` | number or null |  |
 | `alertPercent` | number |  |
 | `balance` | number |  |
 | `currency` | string |  |

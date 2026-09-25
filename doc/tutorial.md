@@ -38,8 +38,8 @@ const Seneca = require('seneca')
 const SEED = {
   entity: {
     balance: {
-      balance0: {"alertAt":"alertAt0","alertPercent":100,"balance":100,"currency":"currency0","id":"balance0"},
-      balance1: {"alertAt":"alertAt1","alertPercent":200,"balance":200,"currency":"currency1","id":"balance1"},
+      balance0: {"alertAt":100,"alertPercent":100,"balance":100,"currency":"currency0","id":"balance0"},
+      balance1: {"alertAt":200,"alertPercent":200,"balance":200,"currency":"currency1","id":"balance1"},
     },
   },
 }

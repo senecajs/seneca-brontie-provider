@@ -22,8 +22,9 @@ reset:
 #
 # The builder generates this package and nothing else. Its API definition
 # and guide are the SDK's: everything below fetches the SDK named in
-# sdk-pin.json, and `make regen` copies them from it before generating, so
-# the package is built from the same model as the SDK version it depends on.
+# sdk-pin.json, and `make regen` replaces them with its own before
+# generating, so the package is built from the same model as the SDK version
+# it depends on.
 #
 # NOT a git submodule, deliberately. A submodule pins a commit in git's own
 # plumbing, where a stale one is invisible in a normal diff and updating it is
@@ -56,6 +57,11 @@ sdk-src:
 	  ln -s "$$(cd "$(SDK_SRC_FROM)" && pwd)" "$(SDK_DIR)"; \
 	  exit 0; \
 	fi; \
+	if [ -L "$(SDK_DIR)" ]; then \
+	  echo "sdk-src: $(SDK_DIR) links to $$(readlink "$(SDK_DIR)"), which is left as it is;"; \
+	  echo "         make sdk-clean first to fetch $(SDK_TAG) instead"; \
+	  exit 0; \
+	fi; \
 	if [ -d "$(SDK_DIR)/.git" ]; then \
 	  echo "sdk-src: fetching $(SDK_TAG) in $(SDK_DIR)"; \
 	  git -C "$(SDK_DIR)" fetch --depth 1 origin "refs/tags/$(SDK_TAG):refs/tags/$(SDK_TAG)" 2>/dev/null || \
@@ -79,10 +85,10 @@ sdk-clean:
 
 # Regenerate this repository with its own builder.
 #
-# The API definition and guide come from the SDK source first, so the builder
-# generates from the SDK's model at the pinned tag, and generation checks the
-# result against that source before writing. A linked checkout (SDK_SRC_FROM)
-# is safe here: only this repository is written.
+# The API definition and guide are replaced by the SDK source's first, so the
+# builder generates from the SDK's model at the pinned tag, and generation
+# checks the result against that source before writing. A linked checkout
+# (SDK_SRC_FROM) is read as it is, and only this repository is written.
 #
 # To move to a newer SDK, set its version in .sdk/model/project.aontu and
 # fetch that tag as you regenerate:
@@ -91,9 +97,13 @@ sdk-clean:
 regen: sdk-src
 	@set -e; \
 	test -f .sdk/package.json || { echo "regen: no builder at .sdk/"; exit 1; }; \
-	echo "regen: copying the API definition and guide from $(SDK_DIR)"; \
-	cp -R "$(SDK_DIR)/.sdk/def/." .sdk/def/; \
-	cp -R "$(SDK_DIR)/.sdk/model/guide/." .sdk/model/guide/; \
+	for d in def model/guide; do \
+	  test -d "$(SDK_DIR)/.sdk/$$d" || { echo "regen: no $(SDK_DIR)/.sdk/$$d"; exit 1; }; \
+	done; \
+	echo "regen: replacing the API definition and guide with those in $(SDK_DIR)"; \
+	for d in def model/guide; do \
+	  rm -rf ".sdk/$$d"; mkdir -p ".sdk/$$d"; cp -R "$(SDK_DIR)/.sdk/$$d/." ".sdk/$$d/"; \
+	done; \
 	echo "regen: installing the builder"; \
 	cd .sdk && npm install && \
 	echo "regen: generating" && \
