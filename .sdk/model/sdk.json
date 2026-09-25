@@ -1,0 +1,700 @@
+{
+  "NAME": "BRONTIE",
+  "Name": "Brontie",
+  "def": "brontie.yml",
+  "main": {
+    "api": {
+      "entity": {},
+      "guide": {}
+    },
+    "custom": {
+      "plurals": {}
+    },
+    "def": {
+      "desc": ""
+    },
+    "kit": {
+      "author": {
+        "name": "",
+        "url": ""
+      },
+      "config": {
+        "docs_order": [
+          "ts",
+          "py",
+          "php",
+          "go",
+          "rb",
+          "lua"
+        ],
+        "headers": {
+          "content-type": "application/json"
+        },
+        "repr": "auto"
+      },
+      "contributor": {},
+      "doc": {
+        "active": false,
+        "assets": {
+          "path": ".sdk/doc/assets"
+        },
+        "brand": {
+          "label": "",
+          "notice": "",
+          "shortNotice": "",
+          "url": ""
+        },
+        "ci": {
+          "active": true,
+          "branch": "main"
+        },
+        "content": {
+          "path": ".sdk/doc/content"
+        },
+        "edition": {
+          "github-pages": {
+            "active": true,
+            "base": "node_modules/@voxgig/docgen/project/.sdk",
+            "brand": {},
+            "filter": {
+              "entities": [],
+              "features": [],
+              "targets": []
+            },
+            "kind": "github-pages",
+            "name": "github-pages",
+            "origname": "",
+            "output": {
+              "path": "docs"
+            },
+            "package": "@voxgig/docgen",
+            "published": false,
+            "site": {
+              "active": true
+            },
+            "style": {},
+            "title": ""
+          },
+          "summary": {
+            "active": true,
+            "base": "node_modules/@voxgig/docgen/project/.sdk",
+            "brand": {},
+            "filter": {
+              "entities": [],
+              "features": [],
+              "targets": []
+            },
+            "kind": "summary",
+            "name": "summary",
+            "origname": "",
+            "output": {
+              "path": "SUMMARY.md"
+            },
+            "package": "@voxgig/docgen",
+            "published": false,
+            "site": {
+              "active": true
+            },
+            "style": {},
+            "title": ""
+          }
+        },
+        "qa": {
+          "vocabulary": []
+        },
+        "style": {
+          "color": {
+            "accent": "#00c6d8",
+            "background": "#f5f5f9",
+            "darkBackground": "#0f1117",
+            "darkText": "#e6edf3",
+            "primary": "#e70042",
+            "text": "#0a0a0a"
+          },
+          "font": "Nunito, system-ui, sans-serif",
+          "fontFile": "",
+          "headingFont": "Nunito, system-ui, sans-serif",
+          "headingFontFile": "",
+          "logo": "",
+          "mode": "light",
+          "mono": "ui-monospace, monospace",
+          "monoFile": ""
+        },
+        "target": {}
+      },
+      "entity": {
+        "balance": {
+          "active": true,
+          "alias": {
+            "field": {}
+          },
+          "fields": {
+            "alertAt": {
+              "a": true,
+              "h": "Alert At",
+              "n": "alertAt",
+              "r": true,
+              "sh": "The threshold resolved to a euro figure: `lastTopUp × alertPercent`.",
+              "t": [
+                "`$ONE`",
+                [
+                  "`$NUMBER`",
+                  "`$NULL`"
+                ]
+              ]
+            },
+            "alertPercent": {
+              "a": true,
+              "h": "Alert Percent",
+              "n": "alertPercent",
+              "r": true,
+              "sh": "Percentage of the most recent top-up at which the low-balance threshold sits.",
+              "t": "`$NUMBER`"
+            },
+            "balance": {
+              "a": true,
+              "h": "Balance",
+              "n": "balance",
+              "r": true,
+              "t": "`$NUMBER`"
+            },
+            "currency": {
+              "a": true,
+              "h": "Currency",
+              "n": "currency",
+              "r": true,
+              "t": "`$STRING`"
+            }
+          },
+          "name": "balance",
+          "op": {
+            "load": {
+              "input": "data",
+              "name": "load",
+              "points": [
+                {
+                  "a": true,
+                  "co": {
+                    "id": "GET /api/v1/balance",
+                    "source": "openapi3",
+                    "version": 2
+                  },
+                  "g": {},
+                  "k": "http",
+                  "li": {
+                    "assert": {
+                      "equal": {
+                        "currency": "EUR"
+                      }
+                    },
+                    "auth": "account",
+                    "id": "balance",
+                    "retention": "Read-only; creates nothing."
+                  },
+                  "m": "GET",
+                  "o": "/api/v1/balance",
+                  "q": {},
+                  "r": {},
+                  "s": [
+                    {
+                      "lit": "api"
+                    },
+                    {
+                      "lit": "v1"
+                    },
+                    {
+                      "lit": "balance"
+                    }
+                  ],
+                  "t": {
+                    "req": "`reqdata`",
+                    "res": "`body`"
+                  }
+                }
+              ]
+            }
+          },
+          "relations": {
+            "ancestors": []
+          }
+        },
+        "voucher": {
+          "active": true,
+          "alias": {
+            "field": {}
+          },
+          "fields": {
+            "idempotencyKey": {
+              "a": true,
+              "h": "Idempotency Key",
+              "n": "idempotencyKey",
+              "r": true,
+              "sh": "Unique per gift on the partner side, scoped per partner and per mode.",
+              "t": "`$STRING`"
+            },
+            "message": {
+              "a": true,
+              "h": "Message",
+              "n": "message",
+              "r": false,
+              "sh": "Short personal note shown with the gift.",
+              "t": "`$STRING`"
+            },
+            "product": {
+              "a": true,
+              "h": "Product",
+              "n": "product",
+              "r": true,
+              "sh": "`coffee` is EUR 5.00, `coffee_and_cake` is EUR 10.00.",
+              "t": "`$STRING`"
+            },
+            "recipient": {
+              "a": true,
+              "h": "Recipient",
+              "n": "recipient",
+              "r": false,
+              "t": "`$OBJECT`"
+            },
+            "reference": {
+              "a": true,
+              "h": "Reference",
+              "n": "reference",
+              "r": false,
+              "sh": "Your identifier.",
+              "t": "`$STRING`"
+            },
+            "senderName": {
+              "a": true,
+              "h": "Sender Name",
+              "n": "senderName",
+              "r": false,
+              "sh": "Who the gift appears to be from, per call, so it can vary by course or cohort.",
+              "t": "`$STRING`"
+            }
+          },
+          "name": "voucher",
+          "op": {
+            "create": {
+              "input": "data",
+              "name": "create",
+              "points": [
+                {
+                  "a": true,
+                  "co": {
+                    "id": "POST /api/v1/vouchers",
+                    "source": "openapi3",
+                    "version": 2
+                  },
+                  "g": {},
+                  "k": "http",
+                  "li": {
+                    "auth": "account",
+                    "excluded": "Issues a permanent voucher; no delete or refund path exists",
+                    "id": "voucher-create"
+                  },
+                  "m": "POST",
+                  "o": "/api/v1/vouchers",
+                  "q": {},
+                  "r": {},
+                  "s": [
+                    {
+                      "lit": "api"
+                    },
+                    {
+                      "lit": "v1"
+                    },
+                    {
+                      "lit": "vouchers"
+                    }
+                  ],
+                  "t": {
+                    "req": "`reqdata`",
+                    "res": "`body`"
+                  }
+                }
+              ]
+            }
+          },
+          "relations": {
+            "ancestors": []
+          }
+        }
+      },
+      "feature": {
+        "test": {
+          "active": true,
+          "base": "node_modules/@voxgig/sdkgen/project/.sdk",
+          "config": {
+            "options": {
+              "active": false
+            },
+            "optspec": {
+              "entity": "`$MAP`",
+              "net": "`$MAP`"
+            },
+            "strict": false
+          },
+          "description": "In-memory mock transport for testing without a live server",
+          "hook": {
+            "GetData": {
+              "active": true,
+              "await": false
+            },
+            "GetMatch": {
+              "active": true,
+              "await": false
+            },
+            "PostConstruct": {
+              "active": true,
+              "await": false
+            },
+            "PostConstructEntity": {
+              "active": true,
+              "await": false
+            },
+            "PostOperation": {
+              "active": false,
+              "await": false
+            },
+            "PrePoint": {
+              "active": true,
+              "await": false
+            },
+            "PreRequest": {
+              "active": true,
+              "await": false
+            },
+            "PreResponse": {
+              "active": true,
+              "await": false
+            },
+            "PreResult": {
+              "active": true,
+              "await": false
+            },
+            "PreSpec": {
+              "active": true,
+              "await": false
+            },
+            "PreTarget": {
+              "active": false,
+              "await": false
+            },
+            "SetData": {
+              "active": true,
+              "await": false
+            },
+            "SetMatch": {
+              "active": true,
+              "await": false
+            }
+          },
+          "name": "test",
+          "needs": {},
+          "origname": "",
+          "package": "@voxgig/sdkgen",
+          "plugin": {},
+          "spec": {},
+          "target": {
+            "seneca-provider": {
+              "deps": {}
+            }
+          },
+          "title": "Test transport",
+          "transport": "base",
+          "version": "0.0.1"
+        }
+      },
+      "flow": {
+        "BasicBalanceFlow": {
+          "active": true,
+          "entity": "balance",
+          "key$": "BasicBalanceFlow",
+          "kind": "basic",
+          "name": "BasicBalanceFlow",
+          "param": {},
+          "step": [
+            {
+              "a": true,
+              "d": {},
+              "i": {
+                "ref": "balance_ref01",
+                "srcdatavar": "balance_ref01_data",
+                "suffix": "_dt0"
+              },
+              "m": {},
+              "o": "load",
+              "s": [],
+              "v": [
+                {
+                  "apply": "TextFieldMark",
+                  "def": {
+                    "mark": "Mark01-balance_ref01"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "BasicVoucherFlow": {
+          "active": true,
+          "entity": "voucher",
+          "key$": "BasicVoucherFlow",
+          "kind": "basic",
+          "name": "BasicVoucherFlow",
+          "param": {},
+          "step": [
+            {
+              "a": true,
+              "d": {},
+              "i": {
+                "ref": "voucher_ref01"
+              },
+              "m": {},
+              "o": "create",
+              "s": [],
+              "v": []
+            }
+          ]
+        }
+      },
+      "info": {
+        "contact": {
+          "email": "hello@brontie.ie",
+          "name": "Kevin Honer, Brontie"
+        },
+        "description": "Partners call this API to issue a Brontie voucher. Brontie returns a\nredemption link. The partner surfaces that link inside their own product. Brontie does\nnot contact the recipient: no email, no SMS.\n\nThe recipient chooses a partner cafe themselves after receiving the link,\nnot at issue time, so no cafe is associated with a voucher until the\nrecipient picks one.\n\nMoney comes off a balance topped up in advance. There is no refund path back\nto the balance, including for vouchers that are never redeemed.\n\nSelf-service top-up is still being built. Until it ships, balances are\ncredited by arrangement with Brontie.\n\nScope: Republic of Ireland, EUR only.\n\nRead the Idempotency section before building. The `idempotencyKey` is\nrequired and the retry behaviour around it is the only surprising part of\nthis API.\n",
+        "security": {
+          "in": "header",
+          "name": "Authorization",
+          "prefix": "Bearer",
+          "scheme": "bearerAuth",
+          "type": "http"
+        },
+        "servers": [
+          {
+            "description": "Production. Key prefix determines live or test mode.",
+            "url": "https://www.brontie.ie"
+          }
+        ],
+        "summary": "Issue coffee vouchers against a pre-funded balance.",
+        "title": "Brontie Partner API",
+        "version": "1.0.0",
+        "website": "https://brontie.ie",
+        "x-status": "Voucher issuing, balance and outbound webhooks (voucher.created, voucher.redeemed, balance.low) are all live. Reconciliation endpoints, simulate-redemption, self-service top-up and low-balance alert *emails* (to Brontie, distinct from the balance.low webhook to the partner) are not yet built."
+      },
+      "option": {},
+      "optspec": {
+        "allow": {
+          "method": "GET,PUT,POST,PATCH,DELETE,OPTIONS",
+          "op": "create,update,load,list,remove,command,direct,graphql"
+        },
+        "apikey": "",
+        "auth": {
+          "basic": false,
+          "in": "",
+          "name": "",
+          "prefix": ""
+        },
+        "base": "http://localhost:8000",
+        "clean": {
+          "keys": "key,token,id"
+        },
+        "entity": {
+          "`$CHILD`": {
+            "`$OPEN`": true,
+            "active": false,
+            "alias": {}
+          }
+        },
+        "extend": "`$ANY`",
+        "headers": {
+          "`$CHILD`": "`$STRING`"
+        },
+        "prefix": "",
+        "secret": "",
+        "server": {
+          "`$CHILD`": ""
+        },
+        "suffix": "",
+        "system": {
+          "fetch": "`$ANY`"
+        },
+        "test": {
+          "active": false,
+          "entity": {
+            "`$OPEN`": true
+          }
+        },
+        "utility": {}
+      },
+      "phase": {
+        "build": {
+          "active": false
+        },
+        "top": {
+          "active": false
+        }
+      },
+      "repo": {
+        "host": "github.com",
+        "path": ""
+      },
+      "target": {
+        "seneca-provider": {
+          "active": true,
+          "author": {
+            "name": "",
+            "url": ""
+          },
+          "base": "node_modules/@voxgig/sdkgen-infrapack/.sdk",
+          "comment": {
+            "line": "//"
+          },
+          "deps": {
+            "@seneca/doc": {
+              "active": true,
+              "kind": "dev",
+              "version": "^8.0.0"
+            },
+            "@seneca/env": {
+              "active": true,
+              "kind": "peer,dev",
+              "version": ">=0.4"
+            },
+            "@seneca/maintain": {
+              "active": true,
+              "kind": "dev",
+              "version": "^0.1.0"
+            },
+            "@seneca/provider": {
+              "active": true,
+              "kind": "peer,dev",
+              "version": ">=4"
+            },
+            "@types/node": {
+              "active": true,
+              "kind": "dev",
+              "version": "^24.0.0"
+            },
+            "seneca": {
+              "active": true,
+              "kind": "peer,dev",
+              "version": ">=3||>=4.0.0-rc2"
+            },
+            "seneca-entity": {
+              "active": true,
+              "kind": "peer,dev",
+              "version": ">=26"
+            },
+            "seneca-msg-test": {
+              "active": true,
+              "kind": "dev",
+              "version": "^4.1.0"
+            },
+            "seneca-promisify": {
+              "active": true,
+              "kind": "peer,dev",
+              "version": ">=3"
+            },
+            "typescript": {
+              "active": true,
+              "kind": "dev",
+              "version": "^5.4.5"
+            }
+          },
+          "ext": "ts",
+          "feature": {
+            "fullset": [],
+            "trim": true
+          },
+          "module": {
+            "goversion": "",
+            "name": "brontie",
+            "package": "",
+            "path": ""
+          },
+          "name": "seneca-provider",
+          "origname": "",
+          "output": {
+            "adopt": false,
+            "create": true,
+            "path": "",
+            "repo": "",
+            "root": true,
+            "sdkrel": ""
+          },
+          "package": "@voxgig/sdkgen-infrapack",
+          "phase": {
+            "agentguide": {
+              "active": false
+            },
+            "entity": {
+              "active": false
+            },
+            "feature": {
+              "active": false
+            },
+            "readme": {
+              "active": false
+            },
+            "test": {
+              "active": false
+            }
+          },
+          "provides": {},
+          "publish": {
+            "registry": {
+              "active": false,
+              "name": "npm",
+              "package": "",
+              "state": "pending",
+              "url": "https://registry.npmjs.org",
+              "vault": {
+                "alias": "npm",
+                "env": "",
+                "recipe": "npm"
+              }
+            },
+            "tag": {
+              "active": true,
+              "prefix": "",
+              "vault": {
+                "alias": "github",
+                "recipe": "github"
+              },
+              "via": "port"
+            },
+            "version": "0.0.1"
+          },
+          "sdk": {
+            "dep": {
+              "asset": "",
+              "kind": "git",
+              "ref": "ts-v0.0.1",
+              "repo": "",
+              "spec": ""
+            },
+            "package": "",
+            "version": "0.0.1"
+          },
+          "srcfeature": false,
+          "superseded": [],
+          "title": "Seneca Provider"
+        }
+      },
+      "test": {
+        "live": {
+          "app": false,
+          "base": "",
+          "strict": true
+        }
+      }
+    }
+  },
+  "name": "brontie",
+  "name-": "brontie",
+  "name_": "brontie",
+  "name__orig": "brontie",
+  "origin": "voxgig-sdk"
+}

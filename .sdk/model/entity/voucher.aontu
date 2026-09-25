@@ -1,0 +1,91 @@
+# Entity: voucher
+
+main: kit: entity: voucher: {
+
+  alias: field: {}
+
+  fields: {
+    idempotencyKey: {
+      h: "Idempotency Key"
+      n: "idempotencyKey"
+      r: true
+      sh: "Unique per gift on the partner side, scoped per partner and per mode."
+      t: "`$STRING`"
+    }
+    message: {
+      h: "Message"
+      n: "message"
+      r: false
+      sh: "Short personal note shown with the gift."
+      t: "`$STRING`"
+    }
+    product: {
+      h: "Product"
+      n: "product"
+      r: true
+      sh: "`coffee` is EUR 5.00, `coffee_and_cake` is EUR 10.00."
+      t: "`$STRING`"
+    }
+    recipient: {
+      h: "Recipient"
+      n: "recipient"
+      r: false
+      t: "`$OBJECT`"
+    }
+    reference: {
+      h: "Reference"
+      n: "reference"
+      r: false
+      sh: "Your identifier."
+      t: "`$STRING`"
+    }
+    senderName: {
+      h: "Sender Name"
+      n: "senderName"
+      r: false
+      sh: "Who the gift appears to be from, per call, so it can vary by course or cohort."
+      t: "`$STRING`"
+    }
+  }
+
+  name: "voucher"
+  op: {
+    create: {
+      name: "create"
+      points: [
+        {
+          co: {
+            id: "POST /api/v1/vouchers"
+            source: "openapi3"
+            version: 2
+          }
+          li: {
+            auth: "account"
+            excluded: "Issues a permanent voucher; no delete or refund path exists"
+            id: "voucher-create"
+          }
+          m: "POST"
+          o: "/api/v1/vouchers"
+          s: [
+            {
+              lit: "api"
+            }
+            {
+              lit: "v1"
+            }
+            {
+              lit: "vouchers"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

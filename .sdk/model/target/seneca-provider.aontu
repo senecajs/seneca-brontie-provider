@@ -1,0 +1,75 @@
+
+main: kit: target: 'seneca-provider': {
+
+  title: 'Seneca Provider'
+  ext: ts
+  comment: line: "//"
+  module: name: 'brontie'
+  base: 'node_modules/@voxgig/sdkgen-infrapack/.sdk'
+  package: '@voxgig/sdkgen-infrapack'
+  srcfeature: false
+
+  phase: {
+    entity:     { active: false }
+    feature:    { active: false }
+    readme:     { active: false }
+    agentguide: { active: false }
+    test:       { active: false }
+  }
+
+  sdk: {
+    package: *'' | string
+    version: *'' | string
+  }
+
+  sdk: dep: {
+    kind: *'npm' | 'git' | 'release'
+    ref: *'' | string
+    repo: *'' | string
+    asset: *'' | string
+    spec: *'' | string
+  }
+
+  deps: &: {
+    kind: *'prod' | string
+  }
+
+  # The host framework and its plugins: peers of the application, and dev
+  # dependencies of the generated suite, which loads every one of them.
+  deps: {
+    '@seneca/env':       { active: true, version: '>=0.4',  kind: 'peer,dev' }
+    '@seneca/provider':  { active: true, version: '>=4',    kind: 'peer,dev' }
+
+    'seneca':            { active: true, version: '>=3||>=4.0.0-rc2', kind: 'peer,dev' }
+
+    'seneca-entity':     { active: true, version: '>=26',   kind: 'peer,dev' }
+    'seneca-promisify':  { active: true, version: '>=3',    kind: 'peer,dev' }
+
+    '@seneca/doc':       { active: true, version: '^8.0.0', kind: dev }
+
+    # DEV, not prod. Its only use is `require('@seneca/maintain')` in the
+    # GENERATED TEST FILE, beside seneca-msg-test — the repository-hygiene
+    # check the suite runs on itself. Declared prod, every application that
+    # installed a generated provider installed that maintenance tooling and
+    # its tree along with it, for code it never runs.
+    '@seneca/maintain':  { active: true, version: '^0.1.0', kind: dev }
+
+    '@types/node':       { active: true, version: '^24.0.0', kind: dev }
+    'seneca-msg-test':   { active: true, version: '^4.1.0', kind: dev }
+    'typescript':        { active: true, version: '^5.4.5', kind: dev }
+  }
+}
+
+
+main: kit: feature: &: target: 'seneca-provider': deps: &: {
+  kind: *'prod' | string
+}
+
+
+main: kit: target: 'seneca-provider': publish: {
+  registry: {
+    name: 'npm'
+    url: 'https://registry.npmjs.org'
+    vault: { recipe: 'npm', alias: 'npm' }
+  }
+}

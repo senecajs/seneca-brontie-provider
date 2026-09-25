@@ -1,0 +1,770 @@
+# Verified line-by-line against src/app/api/v1/vouchers/route.ts and
+# src/app/api/v1/balance/route.ts on 2026-09-16 (main @ 17c39454, after #315
+# — manual partner credits, and the 402 topUpUrl fix, both live). Includes
+# #314's 500-shape guarantee, precisely scoped in the 500 response below.
+# Every schema, code and description below matches what the handlers do, and
+# the error-code enum is checked programmatically against the source on every
+# update — see the verification note in the PR, not just eyeballed.
+# Corrections from the original prose-derived draft are marked "# VERIFIED:"
+# inline; later updates are marked "# UPDATED <date>".
+
+openapi: 3.1.0
+
+info:
+  title: Brontie Partner API
+  version: 1.0.0
+  summary: Issue coffee vouchers against a pre-funded balance.
+  description: |
+    Partners call this API to issue a Brontie voucher. Brontie returns a
+    redemption link. The partner surfaces that link inside their own product. Brontie does
+    not contact the recipient: no email, no SMS.
+
+    The recipient chooses a partner cafe themselves after receiving the link,
+    not at issue time, so no cafe is associated with a voucher until the
+    recipient picks one.
+
+    Money comes off a balance topped up in advance. There is no refund path back
+    to the balance, including for vouchers that are never redeemed.
+
+    Self-service top-up is still being built. Until it ships, balances are
+    credited by arrangement with Brontie.
+
+    Scope: Republic of Ireland, EUR only.
+
+    Read the Idempotency section before building. The `idempotencyKey` is
+    required and the retry behaviour around it is the only surprising part of
+    this API.
+  contact:
+    name: Kevin Honer, Brontie
+    email: hello@brontie.ie
+  x-status: >-
+    Voucher issuing, balance and outbound webhooks (voucher.created,
+    voucher.redeemed, balance.low) are all live. Reconciliation endpoints,
+    simulate-redemption, self-service top-up and low-balance alert *emails*
+    (to Brontie, distinct from the balance.low webhook to the partner) are
+    not yet built.
+
+servers:
+  - url: https://www.brontie.ie
+    description: Production. Key prefix determines live or test mode.
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Vouchers
+    description: Issuing vouchers.
+  - name: Balance
+    description: Checking the pre-funded balance.
+
+paths:
+  /api/v1/vouchers:
+    post:
+      tags: [Vouchers]
+      operationId: createVoucher
+      summary: Issue a voucher
+      description: |
+        Issues a voucher and debits the partner balance by the product amount.
+
+        Test keys skip the debit entirely. A test key with a zero balance still
+        returns 201, so `402 insufficient_balance` cannot be produced in
+        sandbox.
+
+        Retrying with the same `idempotencyKey` after a success returns the
+        original voucher with HTTP 200 and `idempotentReplay: true`, and does
+        not charge again. Idempotency keys are scoped per partner and per mode,
+        so the same key may be used once in test and once in live.
+
+        Two responses are not reproducible in sandbox: `402
+        insufficient_balance`, because test keys skip the debit, and `409
+        issue_stuck`, because stuck test claims self-heal after five minutes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVoucherRequest'
+            examples:
+              milestone:
+                summary: Course milestone reward
+                value:
+                  product: coffee
+                  idempotencyKey: alulu-8842-m3
+                  recipient:
+                    name: Aoife
+                  senderName: Alulu - Data Foundations - 12 Sep 2026
+                  message: Congratulations on finishing Module 3
+                  reference: alulu-learner-8842
+      responses:
+        '201':
+          description: Voucher issued and balance debited.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Voucher'
+              examples:
+                issued:
+                  value:
+                    voucherToken: K6Ab9XUX1OYx
+                    redeemLink: https://www.brontie.ie/brontie-coffee/K6Ab9XUX1OYx
+                    product: coffee
+                    amount: 5
+                    expiresAt: '2031-09-06T00:00:00.000Z'
+                    balanceAfter: 245
+                    reference: alulu-learner-8842
+                    mode: live
+        '200':
+          description: |
+            Idempotent replay. The original voucher for this key, not charged
+            again.
+
+            # VERIFIED: balanceAfter on a replay is the balance NOW, not the
+            # balance after the original debit.
+            Note that `balanceAfter` in a replay is your balance at the time of
+            the replay, not the balance recorded when the voucher was first
+            issued. If other vouchers have been issued since, it will differ
+            from the 201 you originally received.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Voucher'
+                  - type: object
+                    required: [idempotentReplay]
+                    properties:
+                      idempotentReplay:
+                        type: boolean
+                        const: true
+              examples:
+                replay:
+                  value:
+                    voucherToken: K6Ab9XUX1OYx
+                    redeemLink: https://www.brontie.ie/brontie-coffee/K6Ab9XUX1OYx
+                    product: coffee
+                    amount: 5
+                    expiresAt: '2031-09-06T00:00:00.000Z'
+                    balanceAfter: 240
+                    reference: alulu-learner-8842
+                    mode: live
+                    idempotentReplay: true
+        '400':
+          description: |
+            Malformed body or validation failed. Four codes, one per cause.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                # VERIFIED: two codes were missing from the enum and from here.
+                invalidJson:
+                  summary: Body is not valid JSON
+                  value:
+                    code: invalid_json
+                    error: Request body must be valid JSON
+                invalidProduct:
+                  value:
+                    code: invalid_product
+                    error: product must be "coffee" or "coffee_and_cake"
+                missingIdempotencyKey:
+                  summary: Absent, not a string, or empty after trimming
+                  value:
+                    code: missing_idempotency_key
+                    error: idempotencyKey is required
+                invalidIdempotencyKey:
+                  summary: Longer than 200 characters after trimming
+                  value:
+                    code: invalid_idempotency_key
+                    error: idempotencyKey must be 200 characters or fewer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '402':
+          description: |
+            Insufficient balance. Nothing issued, nothing charged. Live mode
+            only: this response cannot occur for a test key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsufficientBalanceError'
+              examples:
+                outOfFunds:
+                  value:
+                    code: insufficient_balance
+                    error: Insufficient balance to issue this voucher
+                    balance: 3
+                    required: 5
+                    currency: EUR
+                    topUpUrl: mailto:hello@brontie.ie?subject=Top-up%20request%20%E2%80%94%20Alulu
+        '409':
+          description: |
+            Two distinct cases, separated by `code`. Branch on the code, not on
+            the status.
+
+            `issue_in_progress`: a request with this key is genuinely in
+            flight. Retry with backoff and you will receive the original
+            voucher. Occurs in both modes.
+
+            `issue_stuck`: a claim for this key has been pending for more than
+            five minutes, meaning an earlier attempt died mid-issue. In live
+            mode this is not resolved automatically, because money may already
+            have moved and only a human can reconcile it safely. Brontie is
+            alerted when this happens; contact Brontie rather than retrying in a
+            loop, and do not reuse the key. In test mode a stuck claim
+            self-heals after five minutes and the retry succeeds, so
+            `issue_stuck` is not reproducible with a test key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                inProgress:
+                  value:
+                    code: issue_in_progress
+                    error: A request with this idempotencyKey is still being processed
+                stuck:
+                  value:
+                    code: issue_stuck
+                    error: A previous request with this idempotencyKey did not complete and needs manual review. Contact support with this idempotencyKey; do not reuse it.
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: |
+            Internal error. Always this exact shape — `{ error, code }` — even
+            for a fault deep inside the request. A top-level guard on this
+            route (added after the rest of this spec was first verified)
+            catches anything that would otherwise have escaped as a bare
+            platform error with no `code` to branch on.
+
+            For the ordinary case — something failed before any state was
+            touched, or during the mint step itself — any partial work is
+            rolled back before responding: a debit is refunded and the claim
+            released, so retrying with the same key is safe and will succeed.
+
+            One case is narrower: if the fault happens while this route is
+            already handling an abandoned claim from an earlier attempt (see
+            `issue_stuck` above), nothing is rolled back on purpose — a debit
+            from that earlier attempt may or may not have gone through, and
+            guessing wrong would either double-charge or lose track of a
+            voucher. "Safe to retry" still holds in the sense that matters:
+            the same key can never mint twice. It does not guarantee the retry
+            succeeds — in this specific case it will most likely come back as
+            `409 issue_stuck` rather than a fresh `201`, which is the correct
+            outcome, not a bug to work around.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                internal:
+                  value:
+                    code: internal_error
+                    error: Could not issue this voucher
+
+  /api/v1/balance:
+    get:
+      tags: [Balance]
+      operationId: getBalance
+      summary: Get current balance
+      description: |
+        Returns the current pre-funded balance and the configured low-balance
+        threshold.
+
+        The threshold is a percentage of your most recent top-up, resolved to a
+        euro figure in `alertAt`. The percentage is currently set by
+        arrangement with Brontie — no self-service page for it yet.
+
+        # UPDATED 2026-09-18: the balance.low webhook shipped. It was not
+        # live when this endpoint's description first said "not yet sent" —
+        # that line described the webhook, which now exists (see the
+        # webhooks section). What is still true: nobody at Brontie gets an
+        # internal email when a partner crosses their own threshold — that
+        # is a separate, still-unbuilt notification to Brontie, not to you.
+        Crossing below `alertAt` fires the `balance.low` webhook to your
+        registered endpoint, once per crossing, re-armed on your next
+        top-up. These fields are also returned here so your integration can
+        surface the threshold itself without waiting on the webhook.
+      responses:
+        '200':
+          description: Current balance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+              examples:
+                afterTopUp:
+                  summary: After at least one top-up
+                  value:
+                    balance: 245
+                    currency: EUR
+                    alertPercent: 30
+                    alertAt: 150
+                beforeFirstTopUp:
+                  summary: Before any top-up — alertAt is null
+                  value:
+                    balance: 0
+                    currency: EUR
+                    alertPercent: 30
+                    alertAt: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+# UPDATED 2026-09-18: webhooks shipped. This section described a proposed
+# shape before that; it now describes what actually fires, verified against
+# a real receiving endpoint (genuine HMAC signature checked, real delivery,
+# real retry-and-recover, real six-attempt exhaustion) before this note was
+# written. Configured per partner at POST /api/admin/api-partners/{id}/webhook
+# (admin-only, not a partner-facing endpoint) — a partner has no self-service
+# way to set their own URL yet, so tell Brontie the URL directly.
+webhooks:
+  voucherCreated:
+    post:
+      operationId: voucherCreated
+      summary: Voucher created
+      description: |
+        Fires right after a live-mode POST /api/v1/vouchers succeeds. Never
+        fires for a test-mode issue — a test voucher touches no real money and
+        nothing real happened to notify about.
+
+        Same signing and retry behaviour as voucher.redeemed below; both
+        share one implementation.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoucherCreatedEvent'
+            examples:
+              created:
+                value:
+                  event: voucher.created
+                  voucherToken: K6Ab9XUX1OYx
+                  reference: alulu-learner-8842
+                  product: coffee
+                  amount: 5
+                  createdAt: '2026-09-20T10:11:40.000Z'
+                  mode: live
+      responses:
+        '200':
+          description: Acknowledged. Any non-2xx response is retried.
+
+  voucherRedeemed:
+    post:
+      operationId: voucherRedeemed
+      summary: Voucher redeemed
+      description: |
+        The one that matters — fires when a recipient redeems a voucher at a
+        partner café, right after the redemption itself is saved. A webhook
+        failure never rolls back or delays the redemption; the café-facing
+        transaction is already complete by the time this is even queued.
+
+        Delivered to the HTTPS endpoint registered for the partner, signed
+        with a shared secret.
+
+        Signature header, same construction as Stripe:
+
+          X-Brontie-Signature: t=1789012345,v1=<hex hmac-sha256 of "t.body">
+
+        Compute the HMAC over the timestamp, a full stop, and the exact raw
+        request body, using the signing secret as the key. Compare in
+        constant time and reject timestamps outside your tolerance window.
+
+        Retries on anything but a 2xx response, six attempts total spread
+        over roughly a day (5min, 30min, 2h, 8h, 24h after the first), then
+        stops. A retry resends the byte-identical original payload — it is
+        not recomputed from current state — so this is safe to handle
+        idempotently keyed on `voucherToken` exactly as this doc has always
+        said: the same event, not a fresher one, arrives on every attempt.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoucherRedeemedEvent'
+            examples:
+              redeemed:
+                value:
+                  event: voucher.redeemed
+                  voucherToken: K6Ab9XUX1OYx
+                  reference: alulu-learner-8842
+                  product: coffee
+                  amount: 5
+                  redeemedAt: '2026-09-20T10:14:02.000Z'
+                  cafe:
+                    name: Willow and Wild
+                    town: Maynooth
+                  mode: live
+      responses:
+        '200':
+          description: Acknowledged. Any non-2xx response is retried.
+
+  balanceLow:
+    post:
+      operationId: balanceLow
+      summary: Balance crossed the low-balance threshold
+      description: |
+        Fires once per crossing, not once per voucher — a partner sitting
+        just under the line for a week gets one email, not forty. Re-armed
+        by the next credit to the balance, whatever the amount; a partner
+        who stays under the threshold after topping up will get exactly one
+        more of these, not none.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalanceLowEvent'
+            examples:
+              low:
+                value:
+                  event: balance.low
+                  balance: 42.50
+                  alertPercent: 20
+                  alertAt: 100
+                  currency: EUR
+      responses:
+        '200':
+          description: Acknowledged. Any non-2xx response is retried.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        API key as a bearer token. The key prefix determines the mode:
+        `brontie_test_` for sandbox, `brontie_live_` for production. A key is
+        shown once and cannot be recovered.
+
+  responses:
+    Unauthorized:
+      description: |
+        Key missing, malformed, revoked or unknown, or a key whose prefix does
+        not match the mode it was issued in.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            unauthorized:
+              value:
+                code: unauthorized
+                error: Invalid API key
+    Forbidden:
+      # VERIFIED: 403 has two causes, not one.
+      description: |
+        The key is valid but the call is not permitted: either the key lacks
+        the scope for this endpoint (`vouchers:create` or `balance:read`), or
+        the partner account has been deactivated.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            missingScope:
+              value:
+                code: forbidden
+                error: This API key is missing the "vouchers:create" scope
+            inactivePartner:
+              value:
+                code: forbidden
+                error: This partner account is not active
+    RateLimited:
+      description: |
+        Rate limited. Honour `Retry-After`. Limits are per key with separate
+        counters for test and live, so a test key cannot exhaust a live budget.
+        Default 120 requests per minute, burst 20 per second, adjustable per
+        partner without a deploy.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            enum: [1, 60]
+          description: |
+            Seconds to wait before retrying. 1 when the per-second burst limit
+            was hit, 60 when the per-minute limit was hit.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            rateLimited:
+              value:
+                code: rate_limited
+                error: Rate limit exceeded — more than 20 requests in one second
+
+  schemas:
+    Product:
+      type: string
+      enum: [coffee, coffee_and_cake]
+      description: |
+        `coffee` is EUR 5.00, `coffee_and_cake` is EUR 10.00. Prices are fixed
+        per product, not negotiated per partner.
+
+    Mode:
+      type: string
+      enum: [live, test]
+      description: |
+        Derived from the API key prefix. A `test` voucher is not redeemable and
+        its link opens a page stating so.
+
+    CreateVoucherRequest:
+      type: object
+      required: [product, idempotencyKey]
+      description: |
+        Unknown fields are ignored rather than rejected. All string fields are
+        trimmed of surrounding whitespace before use.
+      properties:
+        product:
+          $ref: '#/components/schemas/Product'
+        idempotencyKey:
+          type: string
+          maxLength: 200
+          minLength: 1
+          description: |
+            Unique per gift on the partner side, scoped per partner and per
+            mode. Derive it from your own data, for example learner ID plus
+            milestone. Do not use a timestamp or a UUID generated at call time:
+            a retry would produce a different key, which defeats the purpose.
+
+            Trimmed before validation: a value that is whitespace-only is
+            rejected as missing, and the 200-character limit applies to the
+            trimmed value.
+          examples: [alulu-8842-m3]
+        recipient:
+          $ref: '#/components/schemas/Recipient'
+        senderName:
+          type: string
+          description: |
+            Who the gift appears to be from, per call, so it can vary by course
+            or cohort. Falls back to an account default when absent. Brontie
+            cannot construct course names or dates: build the string on your
+            side and send it here. Not length limited server-side.
+          examples: ['Alulu - Data Foundations - 12 Sep 2026']
+        message:
+          type: string
+          description: |
+            Short personal note shown with the gift. Not length limited
+            server-side; keep it short so it displays well.
+        reference:
+          type: string
+          description: |
+            Your identifier. Stored and returned unchanged. Not length limited
+            server-side.
+
+    Recipient:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Shown on the voucher. Not length limited server-side.
+        email:
+          # VERIFIED: no format validation is performed. `format: email` removed
+          # so a client does not assume the server enforces it.
+          type: string
+          description: |
+            Accepted for your records only, stored as sent — the server does
+            not validate that it is a well-formed address. Brontie does not
+            email the recipient. Most partners omit this.
+
+    Voucher:
+      type: object
+      # VERIFIED: reference is always present (empty string when not supplied).
+      required:
+        [voucherToken, redeemLink, product, amount, expiresAt, balanceAfter, reference, mode]
+      properties:
+        voucherToken:
+          type: string
+          description: |
+            Opaque voucher identifier. Test-mode tokens begin with `test_`.
+        redeemLink:
+          type: string
+          format: uri
+          description: |
+            The only field you need to keep. Surface this to the recipient.
+            Live links are under `/brontie-coffee/`; test links are under
+            `/api-sandbox/voucher/` and open a page stating the voucher cannot
+            be redeemed.
+        product:
+          $ref: '#/components/schemas/Product'
+        amount:
+          type: number
+          description: Amount in EUR debited from the balance.
+        expiresAt:
+          type: string
+          format: date-time
+          description: Five years from issue.
+        balanceAfter:
+          type: number
+          description: |
+            On a 201, the balance after this debit. For test keys nothing is
+            debited, so this is the untouched balance. On a 200 replay, see the
+            note on that response.
+        reference:
+          type: string
+          description: |
+            Always present. Your `reference` echoed back unchanged, or an empty
+            string if you did not supply one.
+        mode:
+          $ref: '#/components/schemas/Mode'
+
+    Balance:
+      type: object
+      required: [balance, currency, alertPercent, alertAt]
+      properties:
+        balance:
+          type: number
+        currency:
+          type: string
+          const: EUR
+        alertPercent:
+          type: number
+          description: |
+            Percentage of the most recent top-up at which the low-balance
+            threshold sits. Always present; defaults to 20.
+        alertAt:
+          # VERIFIED: null before the first top-up. Was `type: number`, which a
+          # strict client would reject — and is the state a new partner is in.
+          type: ['number', 'null']
+          description: |
+            The threshold resolved to a euro figure: `lastTopUp × alertPercent`.
+            `null` until the first top-up has been made, because before then
+            there is nothing for the percentage to be a percentage of.
+
+    Error:
+      type: object
+      required: [code, error]
+      properties:
+        code:
+          type: string
+          description: |
+            Stable machine-readable code. Branch on this, not on `error`.
+          # VERIFIED: complete set the handlers can return. invalid_json and
+          # invalid_idempotency_key were missing.
+          enum:
+            - invalid_json
+            - invalid_product
+            - missing_idempotency_key
+            - invalid_idempotency_key
+            - unauthorized
+            - forbidden
+            - insufficient_balance
+            - issue_in_progress
+            - issue_stuck
+            - rate_limited
+            - internal_error
+        error:
+          type: string
+          description: Human-readable message. Wording may change.
+
+    InsufficientBalanceError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          # VERIFIED: currency is returned and was missing here.
+          required: [balance, required, currency, topUpUrl]
+          properties:
+            balance:
+              type: number
+              description: Your balance at the moment of the request.
+            required:
+              type: number
+              description: The product amount that could not be debited.
+            currency:
+              type: string
+              const: EUR
+            topUpUrl:
+              # UPDATED 2026-09-16: this used to be a link to a self-service
+              # page that was never built, so it 404'd. It is now a mailto:
+              # link straight to Brontie — still a self-service top-up flow
+              # is not built, but the link itself is real and gets a human
+              # involved instead of a dead page. Swap this description (not
+              # the field name) the day self-service ships.
+              type: string
+              format: uri
+              description: |
+                A mailto: link to Brontie, prefilled with the partner name.
+                Self-service top-up is not built yet, so this does not open a
+                page — it opens an email. Balances are credited by arrangement
+                until it does.
+
+    VoucherCreatedEvent:
+      type: object
+      required: [event, voucherToken, reference, product, amount, createdAt, mode]
+      properties:
+        event:
+          type: string
+          const: voucher.created
+        voucherToken:
+          type: string
+        reference:
+          type: string
+          description: Always present — empty string if you did not supply one at issue time.
+        product:
+          $ref: '#/components/schemas/Product'
+        amount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        mode:
+          $ref: '#/components/schemas/Mode'
+          description: Always "live" — this event never fires for a test-mode issue.
+
+    VoucherRedeemedEvent:
+      # UPDATED 2026-09-18: cafe.town is nullable — a café with no town on
+      # file (the field defaults to an empty string, not every café in the
+      # network has filled it in) sends null here, not an empty string.
+      type: object
+      required: [event, voucherToken, reference, redeemedAt, mode]
+      properties:
+        event:
+          type: string
+          const: voucher.redeemed
+        voucherToken:
+          type: string
+        reference:
+          type: string
+          description: Always present — empty string if none was supplied at issue time.
+        product:
+          $ref: '#/components/schemas/Product'
+        amount:
+          type: number
+        redeemedAt:
+          type: string
+          format: date-time
+        cafe:
+          type: ['object', 'null']
+          description: |
+            Resolved when the recipient chooses a cafe. No cafe is associated
+            with a voucher before this point, though in practice this is
+            always populated by the time voucher.redeemed fires — redemption
+            cannot happen before a café is chosen.
+          properties:
+            name:
+              type: string
+            town:
+              type: ['string', 'null']
+        mode:
+          $ref: '#/components/schemas/Mode'
+          description: Always "live" — this event never fires for a test-mode voucher.
+
+    BalanceLowEvent:
+      type: object
+      required: [event, balance, alertPercent, alertAt, currency]
+      properties:
+        event:
+          type: string
+          const: balance.low
+        balance:
+          type: number
+          description: The balance at the moment it crossed the threshold.
+        alertPercent:
+          type: number
+        alertAt:
+          type: number
+          description: The euro figure the balance dropped below — same value GET /balance's alertAt reports.
+        currency:
+          type: string
+          const: EUR

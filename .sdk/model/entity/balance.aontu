@@ -1,0 +1,87 @@
+# Entity: balance
+
+main: kit: entity: balance: {
+
+  alias: field: {}
+
+  fields: {
+    alertAt: {
+      h: "Alert At"
+      n: "alertAt"
+      r: true
+      sh: "The threshold resolved to a euro figure: `lastTopUp × alertPercent`."
+      t: [
+        "`$ONE`"
+        [
+          "`$NUMBER`"
+          "`$NULL`"
+        ]
+      ]
+    }
+    alertPercent: {
+      h: "Alert Percent"
+      n: "alertPercent"
+      r: true
+      sh: "Percentage of the most recent top-up at which the low-balance threshold sits."
+      t: "`$NUMBER`"
+    }
+    balance: {
+      h: "Balance"
+      n: "balance"
+      r: true
+      t: "`$NUMBER`"
+    }
+    currency: {
+      h: "Currency"
+      n: "currency"
+      r: true
+      t: "`$STRING`"
+    }
+  }
+
+  name: "balance"
+  op: {
+    load: {
+      name: "load"
+      points: [
+        {
+          co: {
+            id: "GET /api/v1/balance"
+            source: "openapi3"
+            version: 2
+          }
+          li: {
+            assert: {
+              equal: {
+                currency: "EUR"
+              }
+            }
+            auth: "account"
+            id: "balance"
+            retention: "Read-only; creates nothing."
+          }
+          m: "GET"
+          o: "/api/v1/balance"
+          s: [
+            {
+              lit: "api"
+            }
+            {
+              lit: "v1"
+            }
+            {
+              lit: "balance"
+            }
+          ]
+          t: {
+            req: "`reqdata`"
+            res: "`body`"
+          }
+        }
+      ]
+    }
+  }
+
+
+
+}

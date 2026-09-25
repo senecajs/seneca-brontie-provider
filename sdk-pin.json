@@ -1,0 +1,8 @@
+{
+  "note": "GENERATED. The SDK this provider depends on and is generated from. `make sdk-src` fetches it; `make regen` copies its API definition into .sdk/ and regenerates this repo. Set the version in .sdk/model/project.aontu, not in this file.",
+  "repo": "https://github.com/voxgig-sdk/brontie-sdk",
+  "tag": "v0.0.1",
+  "dir": ".sdksrc/brontie-sdk",
+  "package": "@voxgig-sdk/brontie",
+  "version": "0.0.1"
+}

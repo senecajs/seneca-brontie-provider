@@ -1,0 +1,52 @@
+# API Information
+
+
+main: {
+  kit: {
+    info: {
+      contact: {
+        email: "hello@brontie.ie"
+        name: "Kevin Honer, Brontie"
+      }
+      description: `Partners call this API to issue a Brontie voucher. Brontie returns a
+redemption link. The partner surfaces that link inside their own product. Brontie does
+not contact the recipient: no email, no SMS.
+
+The recipient chooses a partner cafe themselves after receiving the link,
+not at issue time, so no cafe is associated with a voucher until the
+recipient picks one.
+
+Money comes off a balance topped up in advance. There is no refund path back
+to the balance, including for vouchers that are never redeemed.
+
+Self-service top-up is still being built. Until it ships, balances are
+credited by arrangement with Brontie.
+
+Scope: Republic of Ireland, EUR only.
+
+Read the Idempotency section before building. The \`idempotencyKey\` is
+required and the retry behaviour around it is the only surprising part of
+this API.
+`
+      security: {
+        in: "header"
+        name: "Authorization"
+        prefix: "Bearer"
+        scheme: "bearerAuth"
+        type: "http"
+      }
+      servers: [
+        {
+          description: "Production. Key prefix determines live or test mode."
+          url: "https://www.brontie.ie"
+        }
+      ]
+      summary: "Issue coffee vouchers against a pre-funded balance."
+      title: "Brontie Partner API"
+      version: "1.0.0"
+      website: "https://brontie.ie"
+      "x-status": "Voucher issuing, balance and outbound webhooks (voucher.created, voucher.redeemed, balance.low) are all live. Reconciliation endpoints, simulate-redemption, self-service top-up and low-balance alert *emails* (to Brontie, distinct from the balance.low webhook to the partner) are not yet built."
+    }
+  }
+}
+
