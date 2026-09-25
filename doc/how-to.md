@@ -161,8 +161,8 @@ const info = await seneca.post(
 {
   ok: true,
   name: 'brontie',
-  version: '0.0.1',
-  sdk: { name: '@voxgig-sdk/brontie-sdk', version: '0.0.1' },
+  version: '0.0.2',
+  sdk: { name: '@voxgig-sdk/brontie-sdk', version: '0.0.2' },
 }
 ```
 
@@ -305,10 +305,10 @@ $ npm run repo-publish
 Only `dist`, the TypeScript sources and the licence file are published;
 the test suite and its build output stay in the repository.
 
-Publish the SDK to npm first. `package.json` depends on it as
-`github:voxgig-sdk/brontie-sdk#ts-v0.0.1`, which everyone installing this package would
-have to fetch with git. Then drop `sdk.dep` from the model, regenerate,
-and check that the dependency is a version range.
+Before publishing, check that `package.json` still depends on the
+published SDK by version range and not on a local path: a `file:`
+dependency left behind from local development installs perfectly on your
+own machine and cannot be resolved by anybody else.
 
 One last thing: this repository is GENERATED from the Brontie Partner API
 model by [@voxgig/sdkgen](https://github.com/voxgig/sdkgen). An edit made

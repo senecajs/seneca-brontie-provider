@@ -1,6 +1,6 @@
 {
   "name": "@seneca/brontie-provider",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/brontie-provider.js",
   "type": "commonjs",
   "types": "dist/brontie-provider.d.ts",
@@ -45,7 +45,7 @@
     "node": ">=24"
   },
   "dependencies": {
-    "@voxgig-sdk/brontie-sdk": "github:voxgig-sdk/brontie-sdk#ts-v0.0.1"
+    "@voxgig-sdk/brontie-sdk": "^0.0.2"
   },
   "peerDependencies": {
     "@seneca/env": ">=0.4",

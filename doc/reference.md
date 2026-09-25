@@ -1,7 +1,7 @@
 # Reference
 
 Complete description of the interface exposed by
-`@seneca/brontie-provider` version 0.0.1.
+`@seneca/brontie-provider` version 0.0.2.
 
 This document describes the machinery and assumes you know what you are
 looking for. To learn the plugin, start with the [tutorial](tutorial.md);
@@ -27,7 +27,7 @@ the [README](../README.md), and the document index is [here](README.md).
 | ---- | ----- |
 | Node.js | `>=24` |
 | Module format | CommonJS |
-| SDK | [`@voxgig-sdk/brontie-sdk`](https://www.npmjs.com/package/@voxgig-sdk/brontie-sdk) `^0.0.1` |
+| SDK | [`@voxgig-sdk/brontie-sdk`](https://www.npmjs.com/package/@voxgig-sdk/brontie-sdk) `^0.0.2` |
 
 The SDK is an ordinary published dependency, installed by `npm install`
 like any other.
@@ -218,10 +218,10 @@ await seneca.post('sys:provider,provider:brontie,get:info')
 {
   ok: true,
   name: 'brontie',
-  version: '0.0.1',
+  version: '0.0.2',
   sdk: {
     name: '@voxgig-sdk/brontie-sdk',
-    version: '0.0.1',
+    version: '0.0.2',
   },
 }
 ```

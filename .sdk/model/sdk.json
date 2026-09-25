@@ -678,18 +678,18 @@
               },
               "via": "port"
             },
-            "version": "0.0.1"
+            "version": "0.0.2"
           },
           "sdk": {
             "dep": {
               "asset": "",
-              "kind": "git",
-              "ref": "ts-v0.0.1",
+              "kind": "npm",
+              "ref": "",
               "repo": "",
               "spec": ""
             },
             "package": "@voxgig-sdk/brontie-sdk",
-            "version": "0.0.1"
+            "version": "0.0.2"
           },
           "srcfeature": false,
           "superseded": [],

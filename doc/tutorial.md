@@ -82,8 +82,8 @@ You should see:
 {
   ok: true,
   name: 'brontie',
-  version: '0.0.1',
-  sdk: { name: '@voxgig-sdk/brontie-sdk', version: '0.0.1' },
+  version: '0.0.2',
+  sdk: { name: '@voxgig-sdk/brontie-sdk', version: '0.0.2' },
 }
 ```
 
