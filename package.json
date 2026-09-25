@@ -4,7 +4,7 @@
   "main": "dist/brontie-provider.js",
   "type": "commonjs",
   "types": "dist/brontie-provider.d.ts",
-  "description": "Seneca entity provider for the Brontie Partner API, using the @voxgig-sdk/brontie SDK.",
+  "description": "Seneca entity provider for the Brontie Partner API, using the @voxgig-sdk/brontie-sdk SDK.",
   "homepage": "https://github.com/senecajs/seneca-brontie-provider",
   "keywords": [
     "seneca",
@@ -45,7 +45,7 @@
     "node": ">=24"
   },
   "dependencies": {
-    "@voxgig-sdk/brontie": "github:voxgig-sdk/brontie-sdk#ts-v0.0.1"
+    "@voxgig-sdk/brontie-sdk": "github:voxgig-sdk/brontie-sdk#ts-v0.0.1"
   },
   "peerDependencies": {
     "@seneca/env": ">=0.4",

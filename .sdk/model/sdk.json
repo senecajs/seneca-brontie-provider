@@ -675,7 +675,7 @@
               "repo": "",
               "spec": ""
             },
-            "package": "",
+            "package": "@voxgig-sdk/brontie-sdk",
             "version": "0.0.1"
           },
           "srcfeature": false,

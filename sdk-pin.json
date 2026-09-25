@@ -3,6 +3,6 @@
   "repo": "https://github.com/voxgig-sdk/brontie-sdk",
   "tag": "v0.0.1",
   "dir": ".sdksrc/brontie-sdk",
-  "package": "@voxgig-sdk/brontie",
+  "package": "@voxgig-sdk/brontie-sdk",
   "version": "0.0.1"
 }

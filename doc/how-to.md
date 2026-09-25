@@ -183,7 +183,7 @@ const info = await seneca.post(
   ok: true,
   name: 'brontie',
   version: '0.0.1',
-  sdk: { name: '@voxgig-sdk/brontie', version: '0.0.1' },
+  sdk: { name: '@voxgig-sdk/brontie-sdk', version: '0.0.1' },
 }
 ```
 
@@ -276,13 +276,13 @@ npm creates a symlink, so a rebuild of the SDK is picked up here with no
 reinstall:
 
 ```sh
-$ ls -l node_modules/@voxgig-sdk/brontie
+$ ls -l node_modules/@voxgig-sdk/brontie-sdk
 ```
 
 To go back to the published SDK:
 
 ```sh
-$ rm -rf node_modules/@voxgig-sdk/brontie package-lock.json && npm install
+$ rm -rf node_modules/@voxgig-sdk/brontie-sdk package-lock.json && npm install
 ```
 
 Removing the lockfile matters. npm will happily keep resolving to the

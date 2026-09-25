@@ -2,9 +2,9 @@
 
 const Pkg = require('../package.json')
 
-const { BrontieSDK } = require('@voxgig-sdk/brontie')
+const { BrontieSDK } = require('@voxgig-sdk/brontie-sdk')
 
-const SdkPkg = require('@voxgig-sdk/brontie/package.json')
+const SdkPkg = require('@voxgig-sdk/brontie-sdk/package.json')
 
 
 type BrontieProviderOptions = {
@@ -34,7 +34,7 @@ function BrontieProvider(this: any, options: BrontieProviderOptions) {
       name: 'brontie',
       version: Pkg.version,
       sdk: {
-        name: '@voxgig-sdk/brontie',
+        name: '@voxgig-sdk/brontie-sdk',
         version: SdkPkg.version,
       },
     }

@@ -36,6 +36,7 @@ main: kit: target: 'seneca-provider': output: root: true
 # is on npm, it is installed from a tag whose tree is the SDK's ts/ folder;
 # drop `dep` once it is published.
 main: kit: target: 'seneca-provider': sdk: {
+  package: '@voxgig-sdk/brontie-sdk'
   version: '0.0.1'
   dep: { kind: 'git', ref: 'ts-v0.0.1' }
 }

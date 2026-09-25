@@ -183,7 +183,7 @@ would force every user to invent a fake one.
 
 ## Depending on a published SDK
 
-The SDK is an ordinary published dependency: `@voxgig-sdk/brontie` at
+The SDK is an ordinary published dependency: `@voxgig-sdk/brontie-sdk` at
 `^0.0.1`, resolved by npm like anything else.
 
 The alternative is vendoring — copying the generated client into this
