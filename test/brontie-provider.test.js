@@ -109,16 +109,15 @@ async function makeSeneca(pluginopts) {
 
   const seneca = Seneca({ legacy: false })
     .test()
-    .use('promisify')
-    .use('entity')
-    .use('env', {
+    .use('@seneca/entity')
+    .use('@seneca/env', {
       // Declared so the provider convention is exercised, and defaulted so
       // the suite runs with nothing configured.
       var: {
         $BRONTIE_APIKEY: '',
       },
     })
-    .use('provider', {
+    .use('@seneca/provider', {
       provider: {
         brontie: {
           keys: {

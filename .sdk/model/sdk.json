@@ -565,15 +565,15 @@
             "line": "//"
           },
           "deps": {
-            "@seneca/doc": {
+            "@seneca/entity": {
               "active": true,
-              "kind": "dev",
-              "version": "^8.0.0"
+              "kind": "peer,dev",
+              "version": "^29.0.0"
             },
             "@seneca/env": {
               "active": true,
               "kind": "peer,dev",
-              "version": ">=0.4"
+              "version": "^0.6.0"
             },
             "@seneca/maintain": {
               "active": true,
@@ -583,7 +583,7 @@
             "@seneca/provider": {
               "active": true,
               "kind": "peer,dev",
-              "version": ">=4"
+              "version": "^5.0.0"
             },
             "@types/node": {
               "active": true,
@@ -593,22 +593,12 @@
             "seneca": {
               "active": true,
               "kind": "peer,dev",
-              "version": ">=3||>=4.0.0-rc2"
-            },
-            "seneca-entity": {
-              "active": true,
-              "kind": "peer,dev",
-              "version": ">=26"
+              "version": "^4.0.0"
             },
             "seneca-msg-test": {
               "active": true,
               "kind": "dev",
-              "version": "^4.1.0"
-            },
-            "seneca-promisify": {
-              "active": true,
-              "kind": "peer,dev",
-              "version": ">=3"
+              "version": "^5.0.0"
             },
             "typescript": {
               "active": true,
@@ -678,7 +668,7 @@
               },
               "via": "port"
             },
-            "version": "0.0.2"
+            "version": "0.1.0"
           },
           "sdk": {
             "dep": {

@@ -117,10 +117,10 @@ same way. Declare the variable with `env` and set the key under this
 provider's name:
 
 ```js
-  .use('env', {
+  .use('@seneca/env', {
     var: { $BRONTIE_APIKEY: String },
   })
-  .use('provider', {
+  .use('@seneca/provider', {
     provider: {
       brontie: {
         keys: {
@@ -161,7 +161,7 @@ const info = await seneca.post(
 {
   ok: true,
   name: 'brontie',
-  version: '0.0.2',
+  version: '0.1.0',
   sdk: { name: '@voxgig-sdk/brontie-sdk', version: '0.0.3' },
 }
 ```

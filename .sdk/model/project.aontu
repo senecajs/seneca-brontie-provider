@@ -40,7 +40,7 @@ main: kit: target: 'seneca-provider': sdk: {
 
 # The npm release. 0.0.1 was published by hand, as a new package's first
 # version must be; later versions are released by the publish workflow.
-main: kit: target: 'seneca-provider': publish: version: '0.0.2'
+main: kit: target: 'seneca-provider': publish: version: '0.1.0'
 
 # The SDK's own declaration, from brontie-sdk's .sdk/model/project.aontu:
 # generation checks that this builder's model matches the SDK's.

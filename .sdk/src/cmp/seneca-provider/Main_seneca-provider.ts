@@ -695,6 +695,8 @@ const PackageJson = cmp(function PackageJson(props: any) {
     ...(0 < contributors.length ? { contributors } : {}),
     license: 'MIT',
     repository: { type: 'git', url: `git+${provider.repoUrl}.git` },
+    // Trusted publishing needs the access level in the manifest.
+    publishConfig: { access: 'public' },
     scripts: {
       test: 'node --enable-source-maps --test test/**/*.test.js',
       'test-some':
@@ -820,7 +822,7 @@ function ${provider.pluginName}(this: any, options: ${provider.pluginName}Option
   // what reaches the SDK as match fields: it is an instruction to the store,
   // like sort$ and limit$, not a value to filter on.
   //
-  // THREE PLACES, because seneca-entity puts it in three places depending on
+  // THREE PLACES, because @seneca/entity puts it in three places depending on
   // how the caller spelled it, and dropping any one of them silently turns a
   // named action into an ordinary call:
   //
@@ -828,7 +830,7 @@ function ${provider.pluginName}(this: any, options: ${provider.pluginName}Option
   //   ent.directive$({ action$ }).save$()      -> msg.action$
   //   const e = ent.make$({...}); e.action$=.. -> msg.ent.action$
   //
-  // \`make$({ action$ })\` is NOT among them and cannot be: seneca-entity's
+  // \`make$({ action$ })\` is NOT among them and cannot be: @seneca/entity's
   // make$ copies only keys without a \`$\`, plus the four directives it knows
   // (id$, merge$, custom$, directive$), so an unknown trailing-\`$\` key is
   // dropped before any store sees it. \`id$\` reads like the precedent for

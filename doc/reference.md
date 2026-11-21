@@ -1,7 +1,7 @@
 # Reference
 
 Complete description of the interface exposed by
-`@seneca/brontie-provider` version 0.0.2.
+`@seneca/brontie-provider` version 0.1.0.
 
 This document describes the machinery and assumes you know what you are
 looking for. To learn the plugin, start with the [tutorial](tutorial.md);
@@ -40,21 +40,19 @@ declared in this package's `package.json`.
 | Package | Purpose |
 | ------- | ------- |
 | `seneca` | The host framework. The plugin runs inside the host's instance, never its own. |
-| `seneca-entity` | The entity API the canons below are served through. |
-| `seneca-promisify` | The promise-returning message API. |
+| `@seneca/entity` | The entity API the canons below are served through. |
 | `@seneca/provider` | The provider convention, including `provider/entityBuilder`. |
 | `@seneca/env` | Resolves `$`-prefixed key values from the environment. |
 
 ## Registration
 
 The plugin name is `BrontieProvider`. It must be registered after
-`entity`, `promisify` and `provider`:
+`@seneca/entity` and `@seneca/provider`:
 
 ```js
 Seneca({ legacy: false })
-  .use('promisify')
-  .use('entity')
-  .use('provider', { ... })
+  .use('@seneca/entity')
+  .use('@seneca/provider', { ... })
   .use('@seneca/brontie-provider')
 ```
 
@@ -218,7 +216,7 @@ await seneca.post('sys:provider,provider:brontie,get:info')
 {
   ok: true,
   name: 'brontie',
-  version: '0.0.2',
+  version: '0.1.0',
   sdk: {
     name: '@voxgig-sdk/brontie-sdk',
     version: '0.0.3',
@@ -299,7 +297,7 @@ registered, or the key is absent or empty, no credential is added and
 startup proceeds with a warning in the log.
 
 ```js
-  .use('provider', {
+  .use('@seneca/provider', {
     provider: {
       brontie: {
         keys: {

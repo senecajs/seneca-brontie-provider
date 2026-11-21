@@ -1156,16 +1156,15 @@ async function makeSeneca(pluginopts) {
 
   const seneca = Seneca({ legacy: false })
     .test()
-    .use('promisify')
-    .use('entity')
-    .use('env', {
+    .use('@seneca/entity')
+    .use('@seneca/env', {
       // Declared so the provider convention is exercised, and defaulted so
       // the suite runs with nothing configured.
       var: {
         $${provider.ENV}_APIKEY: '',
       },
     })
-    .use('provider', {
+    .use('@seneca/provider', {
       provider: {
         ${provider.lower}: {
           keys: {
@@ -1204,9 +1203,8 @@ const BASE = process.env.${provider.ENV}_TEST_BASE || '${provider.liveBase}'
 async function makeSeneca() {
   return Seneca({ legacy: false })
     .test()
-    .use('promisify')
-    .use('entity')
-    .use('provider', {
+    .use('@seneca/entity')
+    .use('@seneca/provider', {
       provider: {
         ${provider.lower}: {
           keys: {
@@ -1709,7 +1707,7 @@ generated from the same specification by
 [@voxgig/sdkgen](https://github.com/voxgig/sdkgen) — do not edit it by hand,
 change the model and regenerate.
 
-See [seneca-entity](https://github.com/senecajs/seneca-entity) and the [Seneca Data
+See [@seneca/entity](https://github.com/senecajs/seneca-entity) and the [Seneca Data
 Entities
 Tutorial](https://senecajs.org/docs/tutorials/understanding-data-entities.html)
 for more details on the Seneca entity API.
@@ -1743,10 +1741,9 @@ Full documentation lives in [\`doc/\`](doc/README.md) and follows the
 const Seneca = require('seneca')
 
 const seneca = Seneca()
-  .use('promisify')
-  .use('entity')
-  .use('env', { var: { $${provider.ENV}_APIKEY: '' } })
-  .use('provider', {
+  .use('@seneca/entity')
+  .use('@seneca/env', { var: { $${provider.ENV}_APIKEY: '' } })
+  .use('@seneca/provider', {
     provider: {
       ${provider.lower}: {
         keys: { apikey: { value: '$${provider.ENV}_APIKEY' } },
@@ -1789,7 +1786,7 @@ npm install ${provider.pkgName}
 This plugin expects the Seneca host framework to be present:
 
 \`\`\`sh
-npm install seneca seneca-entity seneca-promisify @seneca/provider @seneca/env
+npm install seneca@^4 @seneca/entity @seneca/provider @seneca/env
 \`\`\`
 
 
@@ -1882,7 +1879,7 @@ await ${saver.name}
 \`\`\`
 
 > **\`make$({ action$: '${act.action}' })\` does not work**, and cannot.
-> \`seneca-entity\`'s \`make$\` copies only keys without a \`$\`, plus the four
+> \`@seneca/entity\`'s \`make$\` copies only keys without a \`$\`, plus the four
 > directives it knows by name (\`id$\`, \`merge$\`, \`custom$\`, \`directive$\`),
 > so any other trailing-\`$\` key is dropped before this plugin sees it —
 > there is nothing left for it to refuse. Use \`directive$\` as above, or
@@ -1914,7 +1911,7 @@ await seneca.entity('provider/${provider.lower}/${first.name}')
 ## Action Patterns
 
 Every message pattern this plugin registers. The entity actions are the ones
-\`seneca-entity\` dispatches to when you call \`list$\` / \`load$\` / \`save$\` /
+\`@seneca/entity\` dispatches to when you call \`list$\` / \`load$\` / \`save$\` /
 \`remove$\` on a canon below — you rarely post them by hand, but they are what
 appears in a Seneca log, and a plugin that documents one of nine is a plugin
 whose logs cannot be read.
@@ -2309,12 +2306,12 @@ server, a network connection, or credentials.
 $ mkdir ${provider.lower}-demo
 $ cd ${provider.lower}-demo
 $ npm init -y
-$ npm install seneca seneca-entity seneca-promisify @seneca/provider ${provider.pkgName}
+$ npm install seneca@^4 @seneca/entity @seneca/provider ${provider.pkgName}
 \`\`\`
 
-The first four are the Seneca host: the framework itself, the entity
-API, the promise wrapper that makes calls awaitable, and the shared
-machinery every Seneca provider is built on. The last is this plugin,
+The first three are the Seneca host: the framework itself (Seneca 4 or
+later, whose messages are already awaitable), the entity API, and the
+shared machinery every Seneca provider is built on. The last is this plugin,
 which brings the ${provider.api} SDK with it.
 
 ${step('Connect')}
@@ -2339,9 +2336,8 @@ ${seedLiteral}  },
 
     Content(`async function main() {
   const seneca = await Seneca({ legacy: false })
-    .use('promisify')
-    .use('entity')
-    .use('provider', {
+    .use('@seneca/entity')
+    .use('@seneca/provider', {
       provider: {
         ${qkey(provider.lower)}: {
           keys: {
@@ -3110,7 +3106,7 @@ reads no key and adds no credential to any request. The \`apikey\` entry in
 the provider configuration is the convention's shape, and stays empty:
 
 \`\`\`js
-  .use('provider', {
+  .use('@seneca/provider', {
     provider: {
       ${provider.lower}: {
         keys: {
@@ -3137,11 +3133,11 @@ same way. Declare the variable with \`env\` and set the key under this
 provider's name:
 
 \`\`\`js
-  .use('env', {
+  .use('@seneca/env', {
     var: { $${provider.ENV}_APIKEY: String${provider.authBasic ?
         `, $${provider.ENV}_SECRET: String` : ''} },
   })
-  .use('provider', {
+  .use('@seneca/provider', {
     provider: {
       ${provider.lower}: {
         keys: {
@@ -3554,21 +3550,19 @@ declared in this package's \`package.json\`.
 | Package | Purpose |
 | ------- | ------- |
 | \`seneca\` | The host framework. The plugin runs inside the host's instance, never its own. |
-| \`seneca-entity\` | The entity API the canons below are served through. |
-| \`seneca-promisify\` | The promise-returning message API. |
+| \`@seneca/entity\` | The entity API the canons below are served through. |
 | \`@seneca/provider\` | The provider convention, including \`provider/entityBuilder\`. |
 | \`@seneca/env\` | Resolves \`$\`-prefixed key values from the environment. |
 
 ## Registration
 
 The plugin name is \`${provider.pluginName}\`. It must be registered after
-\`entity\`, \`promisify\` and \`provider\`:
+\`@seneca/entity\` and \`@seneca/provider\`:
 
 \`\`\`js
 Seneca({ legacy: false })
-  .use('promisify')
-  .use('entity')
-  .use('provider', { ... })
+  .use('@seneca/entity')
+  .use('@seneca/provider', { ... })
 `)
 
     if (live) {
@@ -3903,7 +3897,7 @@ ${acting.map((e: any) => e.actionList.map((a: any) =>
 On a read command (\`list$\`, \`load$\`, \`remove$\`) \`action$\` is a key of
 the query. On \`save$\` it is a directive on the entity, set with
 \`directive$({ action$: '...' })\` or assigned as a property —
-\`make$({ action$ })\` does NOT work, because \`seneca-entity\`'s \`make$\`
+\`make$({ action$ })\` does NOT work, because \`@seneca/entity\`'s \`make$\`
 drops any trailing-\`$\` key it does not know by name.
 
 Routing is by the operation the action belongs to, not by the command:
@@ -4070,7 +4064,7 @@ registered, or the key is absent or empty, no credential is added and
 startup proceeds with a warning in the log.
 
 \`\`\`js
-  .use('provider', {
+  .use('@seneca/provider', {
     provider: {
       ${provider.lower}: {
         keys: {
