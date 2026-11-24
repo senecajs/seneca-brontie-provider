@@ -40,7 +40,9 @@ cd "$root"
 # What each target's OWN toolchain produces - a TypeScript build, a
 # resolved lockfile - which the generator does not emit and must not be
 # reported as stale. Everything else under a target directory is generated.
-keep='(^|/)(dist|dist-test|node_modules)/|(^|/)(package-lock\.json|composer\.lock|go\.sum|Cargo\.lock|yarn\.lock)$'
+# CHANGES.md is written by hand for each release (the release check reads
+# its entry for the package version), so the generator never emits it.
+keep='(^|/)(dist|dist-test|node_modules)/|(^|/)(package-lock\.json|composer\.lock|go\.sum|Cargo\.lock|yarn\.lock)$|^CHANGES\.md$'
 
 # A dirty tree makes the answer meaningless - every uncommitted edit would
 # read as drift - and this deletes directories, so it must not run over

@@ -36,16 +36,16 @@ main: kit: target: 'seneca-provider': {
 
   # The host framework and its plugins: peers of the application, and dev
   # dependencies of the generated suite, which loads every one of them.
+  # Seneca 4 only: the peer is seneca ^4.0.0 and nothing else, the entity
+  # plugin is @seneca/entity (the seneca-entity name is the Seneca 3 line),
+  # and seneca-promisify is gone because Seneca 4 has it built in.
   deps: {
-    '@seneca/env':       { active: true, version: '>=0.4',  kind: 'peer,dev' }
-    '@seneca/provider':  { active: true, version: '>=4',    kind: 'peer,dev' }
+    '@seneca/env':       { active: true, version: '^0.6.0', kind: 'peer,dev' }
+    '@seneca/provider':  { active: true, version: '^5.0.0', kind: 'peer,dev' }
 
-    'seneca':            { active: true, version: '>=3||>=4.0.0-rc2', kind: 'peer,dev' }
+    'seneca':            { active: true, version: '^4.0.0', kind: 'peer,dev' }
 
-    'seneca-entity':     { active: true, version: '>=26',   kind: 'peer,dev' }
-    'seneca-promisify':  { active: true, version: '>=3',    kind: 'peer,dev' }
-
-    '@seneca/doc':       { active: true, version: '^8.0.0', kind: dev }
+    '@seneca/entity':    { active: true, version: '^29.0.0', kind: 'peer,dev' }
 
     # DEV, not prod. Its only use is `require('@seneca/maintain')` in the
     # GENERATED TEST FILE, beside seneca-msg-test — the repository-hygiene
@@ -55,7 +55,7 @@ main: kit: target: 'seneca-provider': {
     '@seneca/maintain':  { active: true, version: '^0.1.0', kind: dev }
 
     '@types/node':       { active: true, version: '^24.0.0', kind: dev }
-    'seneca-msg-test':   { active: true, version: '^4.1.0', kind: dev }
+    'seneca-msg-test':   { active: true, version: '^5.0.0', kind: dev }
     'typescript':        { active: true, version: '^5.4.5', kind: dev }
   }
 }

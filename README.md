@@ -12,7 +12,7 @@ generated from the same specification by
 [@voxgig/sdkgen](https://github.com/voxgig/sdkgen) — do not edit it by hand,
 change the model and regenerate.
 
-See [seneca-entity](https://github.com/senecajs/seneca-entity) and the [Seneca Data
+See [@seneca/entity](https://github.com/senecajs/seneca-entity) and the [Seneca Data
 Entities
 Tutorial](https://senecajs.org/docs/tutorials/understanding-data-entities.html)
 for more details on the Seneca entity API.
@@ -46,10 +46,9 @@ Full documentation lives in [`doc/`](doc/README.md) and follows the
 const Seneca = require('seneca')
 
 const seneca = Seneca()
-  .use('promisify')
-  .use('entity')
-  .use('env', { var: { $BRONTIE_APIKEY: '' } })
-  .use('provider', {
+  .use('@seneca/entity')
+  .use('@seneca/env', { var: { $BRONTIE_APIKEY: '' } })
+  .use('@seneca/provider', {
     provider: {
       brontie: {
         keys: { apikey: { value: '$BRONTIE_APIKEY' } },
@@ -74,7 +73,7 @@ npm install @seneca/brontie-provider
 This plugin expects the Seneca host framework to be present:
 
 ```sh
-npm install seneca seneca-entity seneca-promisify @seneca/provider @seneca/env
+npm install seneca@^4 @seneca/entity @seneca/provider @seneca/env
 ```
 
 
@@ -101,7 +100,7 @@ Each API entity is exposed as a Seneca entity under
 ## Action Patterns
 
 Every message pattern this plugin registers. The entity actions are the ones
-`seneca-entity` dispatches to when you call `list$` / `load$` / `save$` /
+`@seneca/entity` dispatches to when you call `list$` / `load$` / `save$` /
 `remove$` on a canon below — you rarely post them by hand, but they are what
 appears in a Seneca log, and a plugin that documents one of nine is a plugin
 whose logs cannot be read.

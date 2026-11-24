@@ -18,12 +18,12 @@ server, a network connection, or credentials.
 $ mkdir brontie-demo
 $ cd brontie-demo
 $ npm init -y
-$ npm install seneca seneca-entity seneca-promisify @seneca/provider @seneca/brontie-provider
+$ npm install seneca@^4 @seneca/entity @seneca/provider @seneca/brontie-provider
 ```
 
-The first four are the Seneca host: the framework itself, the entity
-API, the promise wrapper that makes calls awaitable, and the shared
-machinery every Seneca provider is built on. The last is this plugin,
+The first three are the Seneca host: the framework itself (Seneca 4 or
+later, whose messages are already awaitable), the entity API, and the
+shared machinery every Seneca provider is built on. The last is this plugin,
 which brings the Brontie Partner SDK with it.
 
 ## Step 2: Connect
@@ -46,9 +46,8 @@ const SEED = {
 
 async function main() {
   const seneca = await Seneca({ legacy: false })
-    .use('promisify')
-    .use('entity')
-    .use('provider', {
+    .use('@seneca/entity')
+    .use('@seneca/provider', {
       provider: {
         brontie: {
           keys: {
@@ -82,7 +81,7 @@ You should see:
 {
   ok: true,
   name: 'brontie',
-  version: '0.0.2',
+  version: '0.1.0',
   sdk: { name: '@voxgig-sdk/brontie-sdk', version: '0.0.3' },
 }
 ```
